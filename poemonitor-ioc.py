@@ -8,6 +8,7 @@
 import json             #Library for JSON manipulation
 import requests         #Library for making HTTP requests
 from time import sleep
+from pcaspy import Driver, SimpleServer #Library for PV creation and manipulation
 
 #Login Data
 userName = 'controle'
@@ -54,6 +55,62 @@ class ArubaApiRequester():
             print('Request failed')
             return r
 
+#PVs defenitions
+prefix = 'TESTE:'
+pvdb = {
+    #PV base name
+    'T1' : {
+    #PV atributes
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    },
+    #PV base name
+    'T2' : {
+        #PV atributes
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    }
+}
+
+#Class responsible for reacting to PV read/write requests
+class poeMonitorDriver(Driver):
+
+    def  __init__(self):
+        super(poeMonitorDriver, self).__init__()
+
+        #====== REST API Connection Initialization =========
+
+        req = ArubaApiRequester('10.129.0.100','80')
+
+        r = req.login(userName,password)
+        cookie = dict(r.json())
+
+        ###############################DEVE INSERIR ISSO EM UMA THREAD###########################################
+
+        #Request poe port status of one port
+        service = 'ports/3/poe/stats'
+        r = req.request('get',service)
+        r = dict(r.json())
+
+        print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+
+        if(r['poe_detection_status'] == 'PPDS_DELIVERING'):
+            self.setParam('T1', 1)
+        else:
+            self.setParam('T1',0)
+
+        self.setParam('T2', 0)
+
+        def write(self,reason,value):
+            #Write Permission
+            if(reason == 'T1'):
+                self.setParam('T1',value)
+            #Write Prohibition
+            elif(reason == 'T2'):
+                return False
+
+        #################################################################3
+'''
 #Creating a ArubaApiRequester object
 req = ArubaApiRequester('10.129.0.100','80')
 
@@ -79,7 +136,17 @@ print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 #Clear session data - Logout request
 service = 'login-sessions'
 r = req.request('delete',service)
+'''
+#Main routine
+if __name__ == '__main__':
 
+    server = SimpleServer()
+    server.createPV(prefix, pvdb)
+    driver = poeMonitorDriver()
+
+    # process CA transactions
+    while True:
+        server.process(0.1)
 
 '''
 #Request poe port status from all switch ports
