@@ -4,6 +4,8 @@
 #source_1 = http://docs.python-requests.org/en/master/api/#requests.Response
 #source_2 = https://support.hpe.com/hpsc/doc/public/display?sp4ts.oid=7074783&docLocale=en_US&docId=emr_na-c05373669
 #source_3 = https://www.w3schools.com/python/python_json.asp
+#source_4 = https://docs.python.org/3/library/queue.html
+#source_5 = https://docs.python.org/3.4/library/threading.html
 
 import json             #Library for JSON manipulation
 import requests         #Library for making HTTP requests
@@ -85,7 +87,7 @@ class poeMonitorDriver(Driver):
         r = req.login(userName,password)
         cookie = dict(r.json())
 
-        ###############################DEVE INSERIR ISSO EM UMA THREAD###########################################
+        ###############################CRIAR AS THREADS DE CONTROLE###########################################
 
         #Request poe port status of one port
         service = 'ports/3/poe/stats'
@@ -109,7 +111,18 @@ class poeMonitorDriver(Driver):
             elif(reason == 'T2'):
                 return False
 
-        #################################################################3
+        def scanSwitchesThread():
+            #Para cada switch existente dentre os devices do arquivos de configuração
+            #criar uma fila(Queue) de comandos e uma thread para tratar o consumo desses recursos
+            #Essas threads são responsaveis por inserir em suas respectivas filas todas as requisições
+            #de escrita(PUT) enviadas pelos clientes e inserir periodicamente requisições de leitura(GET)
+            #dos dados para manter o dado sempre atualizado
+
+        def processThread():
+            #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
+            #Thread executando essa função.
+
+        #################################################################
 '''
 #Creating a ArubaApiRequester object
 req = ArubaApiRequester('10.129.0.100','80')
