@@ -4,17 +4,25 @@
 #source_1 = http://docs.python-requests.org/en/master/api/#requests.Response
 #source_2 = https://support.hpe.com/hpsc/doc/public/display?sp4ts.oid=7074783&docLocale=en_US&docId=emr_na-c05373669
 #source_3 = https://www.w3schools.com/python/python_json.asp
-#source_4 = https://docs.python.org/3/library/queue.html
-#source_5 = https://docs.python.org/3.4/library/threading.html
+#source_4 = https://docs.python.org/3/library/json.html#module-json
+#source_5 = https://docs.python.org/3/library/queue.html
+#source_6 = https://docs.python.org/3.4/library/threading.html
+#source_7 = https://www.tutorialspoint.com/python/python_files_io.htm
 
-import json             #Library for JSON manipulation
+import json             #Library for JSON manipulation+
 import requests         #Library for making HTTP requests
+import threading
 from time import sleep
 from pcaspy import Driver, SimpleServer #Library for PV creation and manipulation
+from ast import literal_eval #Command for transforming string into dictionary
 
 #Login Data
-userName = 'controle'
-password = 'teste'
+USERNAME = 'controle'
+PASSWORD = 'teste'
+
+#Switch Address Data
+IP = '10.129.0.100'
+PORT = '80'
 
 #Class to perform requests for an Aruba switch via it's REST API
 class ArubaApiRequester():
@@ -57,34 +65,44 @@ class ArubaApiRequester():
             print('Request failed')
             return r
 
+#Class to read poemonitor-ioc configure file
+class PoemonitorConfigReader():
+
+    def readFile(self,fileName):
+        with open(fileName,'r') as f:
+            fileData = json.loads(f.read())
+        return fileData
+
 #PVs defenitions
 prefix = 'TESTE:'
 pvdb = {
     #PV base name
     'T1' : {
-    #PV atributes
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    #PV base name
-    'T2' : {
         #PV atributes
         'type'  :   'enum',
         'enums' :   ['Off','On'],
+    },
+    'T2' : {
+
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    },
+    'STATUS' : {
+        'type'  :   'string'
     }
 }
 
 #Class responsible for reacting to PV read/write requests
-class poeMonitorDriver(Driver):
+class PoemonitorDriver(Driver):
 
     def  __init__(self):
-        super(poeMonitorDriver, self).__init__()
+        super(PoemonitorDriver, self).__init__()
 
         #====== REST API Connection Initialization =========
 
-        req = ArubaApiRequester('10.129.0.100','80')
+        req = ArubaApiRequester(IP,PORT)
 
-        r = req.login(userName,password)
+        r = req.login(USERNAME,PASSWORD)
         cookie = dict(r.json())
 
         ###############################CRIAR AS THREADS DE CONTROLE###########################################
@@ -102,16 +120,18 @@ class poeMonitorDriver(Driver):
             self.setParam('T1',0)
 
         self.setParam('T2', 0)
+        self.setParam('STATUS',r['poe_detection_status'])
 
         def write(self,reason,value):
             #Write Permission
-            if(reason == 'T1'):
+            if reason == 'T1':
                 self.setParam('T1',value)
             #Write Prohibition
-            elif(reason == 'T2'):
+            elif reason == 'T2' or reason == 'STATUS':
                 return False
 
         def scanSwitchesThread():
+            print()
             #Para cada switch existente dentre os devices do arquivos de configuração
             #criar uma fila(Queue) de comandos e uma thread para tratar o consumo desses recursos
             #Essas threads são responsaveis por inserir em suas respectivas filas todas as requisições
@@ -119,33 +139,14 @@ class poeMonitorDriver(Driver):
             #dos dados para manter o dado sempre atualizado
 
         def processThread():
+            print()
+
             #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
             #Thread executando essa função.
 
         #################################################################
+
 '''
-#Creating a ArubaApiRequester object
-req = ArubaApiRequester('10.129.0.100','80')
-
-r = req.login(userName,password)
-cookie = dict(r.json())
-
-#Request poe port status from one 1 port
-service = 'ports/1/poe/stats'
-r = req.request('get',service)
-r = dict(r.json())
-print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
-
-service = 'ports/2/poe/stats'
-r = req.request('get',service)
-r = dict(r.json())
-print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
-
-service = 'ports/3/poe/stats'
-r = req.request('get',service)
-r = dict(r.json())
-print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
-
 #Clear session data - Logout request
 service = 'login-sessions'
 r = req.request('delete',service)
@@ -155,7 +156,7 @@ if __name__ == '__main__':
 
     server = SimpleServer()
     server.createPV(prefix, pvdb)
-    driver = poeMonitorDriver()
+    driver = PoemonitorDriver()
 
     # process CA transactions
     while True:
