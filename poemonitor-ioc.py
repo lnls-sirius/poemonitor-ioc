@@ -9,12 +9,12 @@
 #source_6 = https://docs.python.org/3.4/library/threading.html
 #source_7 = https://www.tutorialspoint.com/python/python_files_io.htm
 
-import json             #Library for JSON manipulation+
+import json
 import requests         #Library for making HTTP requests
 import threading
 from time import sleep
-from pcaspy import Driver, SimpleServer #Library for PV creation and manipulation
-from ast import literal_eval #Command for transforming string into dictionary
+from pcaspy import Driver, SimpleServer #Library creation and manipulation of EPICS PVs
+from queue import Queue
 
 #Login Data
 USERNAME = 'controle'
@@ -23,6 +23,31 @@ PASSWORD = 'teste'
 #Switch Address Data
 IP = '10.129.0.100'
 PORT = '80'
+
+#Configuration filename
+CONFIG_FILE_NAME = "poemonitor.config"
+
+#Delay, in seconds, to insert a new read request into a queue
+SCAN_DELAY = 1
+
+#PVs defenitions
+prefix = 'TESTE:'
+pvdb = {
+    #PV base name
+    'T1' : {
+        #PV atributes
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    },
+    'T2' : {
+
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    },
+    'STATUS' : {
+        'type'  :   'string'
+    }
+}
 
 #Class to perform requests for an Aruba switch via it's REST API
 class ArubaApiRequester():
@@ -73,40 +98,74 @@ class PoemonitorConfigReader():
             fileData = json.loads(f.read())
         return fileData
 
-#PVs defenitions
-prefix = 'TESTE:'
-pvdb = {
-    #PV base name
-    'T1' : {
-        #PV atributes
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    'T2' : {
-
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    'STATUS' : {
-        'type'  :   'string'
-    }
-}
+    def getNumberOfSwitchesFrom(self,fileData):
+        return len(fileData["switches"])
 
 #Class responsible for reacting to PV read/write requests
 class PoemonitorDriver(Driver):
 
+    ListOfQueues = []
+
     def  __init__(self):
         super(PoemonitorDriver, self).__init__()
 
-        #====== REST API Connection Initialization =========
-
+        #REST API connection initialization
         req = ArubaApiRequester(IP,PORT)
-
         r = req.login(USERNAME,PASSWORD)
-        cookie = dict(r.json())
+        self.cookie = dict(r.json())
 
-        ###############################CRIAR AS THREADS DE CONTROLE###########################################
+        #Read configuration file content
+        configReader = PoemonitorConfigReader()
+        self.configData = configReader.readFile(CONFIG_FILE_NAME)
 
+        #Create one request queue for each switch
+        for i in range(0, configReader.getNumberOfSwitchesFrom(self.configData)):
+            self.ListOfQueues.append(Queue())
+
+        #Event object used for periodically read the PVs values
+        self.event = threading.Event()
+
+        #Define and start the scan thread
+        self.scan = threading.Thread(target = self.scanThread)
+        self.scan.setDaemon(True)
+        self.scan.start()
+
+        #Define and start all the process threads
+        self.processList = []
+        for i in range(0,len(self.ListOfQueues)):
+            th = threading.Thread(target = self.processThread(i))
+            th.setDaemon(True)
+            th.start()
+            self.processList.append(th)
+
+    def scanThread(self):
+
+        #Periodically inserts read requests into each request queue
+        while(True):
+            for i in self.ListOfQueues:
+                i.put(["READ_POE_PORT_STATUS"])
+                print(i.qsize())
+            self.event.wait(SCAN_DELAY)
+
+    def processThread(self,queueId):
+
+        '''
+        while(True):
+            for i in self.ListOfQueues:
+                print(i.qsize())
+            self.event.wait(4)
+
+        #################LOOP DE CONSUMO################
+        '''
+        while(True):
+             request = self.ListOfQueues[queueId].get(block=True)
+
+             #if(request[0] == "READ_POE_PORT_STATUS"):
+                 #print("Updated PVs     queueID = " + str(queueId))
+
+
+
+        '''
         #Request poe port status of one port
         service = 'ports/3/poe/stats'
         r = req.request('get',service)
@@ -121,30 +180,20 @@ class PoemonitorDriver(Driver):
 
         self.setParam('T2', 0)
         self.setParam('STATUS',r['poe_detection_status'])
+        '''
 
-        def write(self,reason,value):
-            #Write Permission
-            if reason == 'T1':
-                self.setParam('T1',value)
-            #Write Prohibition
-            elif reason == 'T2' or reason == 'STATUS':
-                return False
+        #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
+        #Thread executando essa função.
+        print()
 
-        def scanSwitchesThread():
-            print()
-            #Para cada switch existente dentre os devices do arquivos de configuração
-            #criar uma fila(Queue) de comandos e uma thread para tratar o consumo desses recursos
-            #Essas threads são responsaveis por inserir em suas respectivas filas todas as requisições
-            #de escrita(PUT) enviadas pelos clientes e inserir periodicamente requisições de leitura(GET)
-            #dos dados para manter o dado sempre atualizado
 
-        def processThread():
-            print()
-
-            #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
-            #Thread executando essa função.
-
-        #################################################################
+    def write(self,reason,value):
+        #Write Permission
+        if reason == 'T1':
+            self.setParam('T1',value)
+        #Write Prohibition
+        elif reason == 'T2' or reason == 'STATUS':
+            return False
 
 '''
 #Clear session data - Logout request
