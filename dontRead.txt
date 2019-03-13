@@ -1,0 +1,72 @@
+PREFIXO:PwrState-Sel (Off/On) (escrita sob demanda)
+PREFIXO:PwrState-Sts (Off/On) (leitura uma vez por segundo)
+PV  do STATUS                 (status) -> mostrar os 5 estados possiveis
+
+Na inicialização do IOC: ler o estado atual da interface e atribuir ele às duas PVs acima.
+
+====================================================
+status possiveis a serem regastados das entradas POE
+====================================================
+• Searching: The port is trying to detect a PD connection. (PPDS_SEARCHING)
+• Delivering: The port is delivering power to a PD.        (PPDS_DELIVERING)
+• Disabled: On the indicated port, either PoE support is disabled or PoE power is enabled (PPDS_DISABLED)
+but the PoE module does not have enough power available to supply the port's power
+needs.
+• Fault: The switch detects a problem with the connected PD. (PPDS_FAULT)
+• Other Fault: The switch has detected an internal fault that prevents it from supplying (PPDS_OTHERFAULT)
+power on that port.
+---------------------------------------------------------------------------------------------------
+pv -> delivering or not delivering -> basicamente ON ou OFF
+pv -> complete status              -> Mostra o estado completo, mais detalhado (explicação do q é o estado inserida na PV?)
+
+verificar se da para pegar stats de 3 portas em 1 segundo -> é possivel, foi realizado um teste para tentar obter 10 amostras de cada
+em 1 segundo e demorou 1.127 segundos.
+
+usar pykaspy para criar as PVs -> criar todas as pvs
+
+arquivo com listagem de configuração
+de cada dispisitivo -> o IOC deverá ler esse arquivo de configuração e saber através dele quais são todos os
+dispositivos que devem ser monitorados, esse arquivo deve conter as seguintes informações de cada dispositivos
+    ip do switch , (comunicação com o switch)
+    numero da porta,-> (comunicação com o switch)
+    niome do dispostiivo -> (prefixo da PV)
+
+
+Fazer thread para buscar na API o valor e traduzir esse valor para oq mostrar na PV
+    -> criar as filas (ok)
+    -> criar toda a thread scan
+        -> criar os eventos para i9nserir os gets periodicos(ok)
+
+#####PAREI AQUI #######
+
+-> criar as thread process para cada fila
+    ######PROBLEMA QUE ESTÁ ACONTECENDO -> SÓ 1 THREAD ESTÁ TENDO SUA FILA CONSUMIDA?????#####
+
+
+fazer pela função write a permissão de escrita na devida pv, e isso faz com que ao invés de alterar naquele momento o valor da pv
+ele insira uma requisição de escrita TUPLA -> ("NOME DA REQUISIÇÃO", VALOR) na fila do respectivo switch que dps será processada pela thread process
+e ai sim alterado seu valor pelo valor requisitado
+
+
+
+colocar o logout no reqester
+
+tela do css -> baixar ultima versão de produção do ESS
+
+adicionar PVs no archivers
+
+inserir no inicio do código breve descrição de seu propósito
+
+color nome do autor
+
+EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT
+
+DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT
+
+REALIZAR CONEXÃO PERSISTENTE??
+
+VERIFICAR OQUE FAZER SOB FALHA NOS REQUESTS, COMO TRATAR OS ERROS?
+
+SE EU PERDER CONEXÃO COM O SWITCH OQUE FAZER?
+
+COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
