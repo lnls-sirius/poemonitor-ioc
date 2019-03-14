@@ -133,7 +133,7 @@ class PoemonitorDriver(Driver):
         #Define and start all the process threads
         self.processList = []
         for i in range(0,len(self.ListOfQueues)):
-            th = threading.Thread(target = self.processThread(i))
+            th = threading.Thread(target = self.processThread, args=[i])
             th.setDaemon(True)
             th.start()
             self.processList.append(th)
