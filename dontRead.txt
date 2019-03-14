@@ -40,13 +40,12 @@ Fazer thread para buscar na API o valor e traduzir esse valor para oq mostrar na
 #####PAREI AQUI #######
 
 -> criar as thread process para cada fila
-    ######PROBLEMA QUE ESTÁ ACONTECENDO -> SÓ 1 THREAD ESTÁ TENDO SUA FILA CONSUMIDA?????#####
-
+    ######PROBLEMA QUE ESTÁ ACONTECENDO -> SÓ 1 THREAD ESTÁ TENDO SUA FILA CONSUMIDA?????##### <- CONCERTADA????
+    ######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????    ####################
 
 fazer pela função write a permissão de escrita na devida pv, e isso faz com que ao invés de alterar naquele momento o valor da pv
 ele insira uma requisição de escrita TUPLA -> ("NOME DA REQUISIÇÃO", VALOR) na fila do respectivo switch que dps será processada pela thread process
 e ai sim alterado seu valor pelo valor requisitado
-
 
 
 colocar o logout no reqester
@@ -70,3 +69,5 @@ VERIFICAR OQUE FAZER SOB FALHA NOS REQUESTS, COMO TRATAR OS ERROS?
 SE EU PERDER CONEXÃO COM O SWITCH OQUE FAZER?
 
 COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
+
+indicar versão do python usada
