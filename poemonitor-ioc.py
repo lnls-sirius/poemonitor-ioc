@@ -16,16 +16,8 @@ from time import sleep
 from pcaspy import Driver, SimpleServer #Library creation and manipulation of EPICS PVs
 from queue import Queue
 
-#Login Data
-USERNAME = 'controle'
-PASSWORD = 'teste'
-
-#Switch Address Data
-IP = '10.129.0.100'
-PORT = '80'
-
 #Configuration filename
-CONFIG_FILE_NAME = "poemonitor.config"
+CONFIG_FILE_NAME = 'poemonitor.config'
 
 #Delay, in seconds, to insert a new read request into a queue
 SCAN_DELAY = 1
@@ -34,18 +26,29 @@ SCAN_DELAY = 1
 prefix = 'TESTE:'
 pvdb = {
     #PV base name
-    'T1' : {
+    'T1:PwrState-Sts' : {
         #PV atributes
         'type'  :   'enum',
         'enums' :   ['Off','On'],
     },
-    'T2' : {
+    'T2:PwrState-Sts' : {
 
         'type'  :   'enum',
         'enums' :   ['Off','On'],
     },
-    'STATUS' : {
+    'T1:PwrState-Raw' : {
         'type'  :   'string'
+    },
+    'T2:PwrState-Raw' : {
+        'type'  :   'string'
+    },
+    'T1:PwrState-Sel' : {
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
+    },
+    'T2:PwrState-Sel' : {
+        'type'  :   'enum',
+        'enums' :   ['Off','On'],
     }
 }
 
@@ -63,8 +66,8 @@ class ArubaApiRequester():
         try:
             service = 'login-sessions'
             r = requests.post(self.apiUrl + '' + service,json={
-                "userName":username,
-                "password":password,
+                'userName':username,
+                'password':password,
                 })
             self.cookie = dict(r.json())
             return r
@@ -90,6 +93,14 @@ class ArubaApiRequester():
             print('Request failed')
             return r
 
+    def logout(self):
+        try:
+            service = 'login-sessions'
+            r = request('delete',service)
+        except:
+            print('Logout attempt failed')
+            return r
+
 #Class to read poemonitor-ioc configure file
 class PoemonitorConfigReader():
 
@@ -99,7 +110,20 @@ class PoemonitorConfigReader():
         return fileData
 
     def getNumberOfSwitchesFrom(self,fileData):
-        return len(fileData["switches"])
+        return len(fileData['switches'])
+
+    def getLoginDataFrom(self,queueId,fileData):
+        return fileData['switches'][queueId]['login_data']
+
+    def getDevicesFrom(self,queueId,fileData):
+        return fileData['switches'][queueId]['devices']
+
+    def getQueueIdByDeviceName(self,deviceName,fileData):
+        for i in range(0, len(r['switches'])):
+            for j in r['switches'][i]['devices']:
+                if j['name'] == 'T1':
+                    return i
+        return False
 
 #Class responsible for reacting to PV read/write requests
 class PoemonitorDriver(Driver):
@@ -109,17 +133,12 @@ class PoemonitorDriver(Driver):
     def  __init__(self):
         super(PoemonitorDriver, self).__init__()
 
-        #REST API connection initialization
-        req = ArubaApiRequester(IP,PORT)
-        r = req.login(USERNAME,PASSWORD)
-        self.cookie = dict(r.json())
-
         #Read configuration file content
-        configReader = PoemonitorConfigReader()
-        self.configData = configReader.readFile(CONFIG_FILE_NAME)
+        self.configReader = PoemonitorConfigReader()
+        self.configData = self.configReader.readFile(CONFIG_FILE_NAME)
 
         #Create one request queue for each switch
-        for i in range(0, configReader.getNumberOfSwitchesFrom(self.configData)):
+        for i in range(0, self.configReader.getNumberOfSwitchesFrom(self.configData)):
             self.ListOfQueues.append(Queue())
 
         #Event object used for periodically read the PVs values
@@ -131,68 +150,80 @@ class PoemonitorDriver(Driver):
         self.scan.start()
 
         #Define and start all the process threads
-        self.processList = []
         for i in range(0,len(self.ListOfQueues)):
             th = threading.Thread(target = self.processThread, args=[i])
             th.setDaemon(True)
             th.start()
-            self.processList.append(th)
+
 
     def scanThread(self):
 
         #Periodically inserts read requests into each request queue
         while(True):
             for i in self.ListOfQueues:
-                i.put(["READ_POE_PORT_STATUS"])
+                i.put(['READ_POE_PORT_STATUS'])
+                #DEBUG
                 print(i.qsize())
             self.event.wait(SCAN_DELAY)
 
+    #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
+    #Thread executando essa função.
     def processThread(self,queueId):
 
-        '''
-        while(True):
-            for i in self.ListOfQueues:
-                print(i.qsize())
-            self.event.wait(4)
+        try:
+            loginData = self.configReader.getLoginDataFrom(queueId,self.configData)
+            #REST API connection initialization
+            req = ArubaApiRequester(loginData['ip'],loginData['port'])
+            r = req.login(loginData['username'],loginData['password'])
 
-        #################LOOP DE CONSUMO################
-        '''
-        while(True):
-             request = self.ListOfQueues[queueId].get(block=True)
+            while(True):
+                 request = self.ListOfQueues[queueId].get(block=True)
 
-             #if(request[0] == "READ_POE_PORT_STATUS"):
-                 #print("Updated PVs     queueID = " + str(queueId))
+                 #Execute requests
+                 if(request[0] == 'READ_POE_PORT_STATUS'):
 
+                     #For each device registered linked to switch on configuration file
+                     for device in self.configReader.getDevicesFrom(queueId,self.configData):
 
+                         #Request POE port status using switch's REST API
+                         r = req.request('get','ports/'+device['port']+'/poe/stats')
+                         r = dict(r.json())
 
-        '''
-        #Request poe port status of one port
-        service = 'ports/3/poe/stats'
-        r = req.request('get',service)
-        r = dict(r.json())
+                         #DEBUG
+                         #print('updated PVs     queueID = ' + str(queueId))
+                         print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 
-        print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+                         #Update PVs values
+                         self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
 
-        if(r['poe_detection_status'] == 'PPDS_DELIVERING'):
-            self.setParam('T1', 1)
-        else:
-            self.setParam('T1',0)
+                         if(r['poe_detection_status'] == 'PPDS_DELIVERING'):
+                             self.setParam(device['name']+':PwrState-Sts',1)
+                         else:
+                             self.setParam(device['name']+':PwrState-Sts',0)
+                         self.updatePVs()
 
-        self.setParam('T2', 0)
-        self.setParam('STATUS',r['poe_detection_status'])
-        '''
-
-        #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
-        #Thread executando essa função.
-        print()
+        except Exception as e:
+            print("Exception thrown by queue's "+queueId+"process thread\nException: "+e)
+            req.logout()
 
 
     def write(self,reason,value):
-        #Write Permission
-        if reason == 'T1':
-            self.setParam('T1',value)
-        #Write Prohibition
-        elif reason == 'T2' or reason == 'STATUS':
+
+        if reason == 'T1:PwrState-Sel':
+            ############ISSO DEVE IR PARA O PROCESS THREAD
+            self.setParam('T1:PwrState-Sel',value)#######
+            self.updatePVs()#################
+            ##################################
+            #INSERIR NA QUEUE RESPECTIVA O VALOR a ser escrito,
+            #e a porta a ser desativada
+        elif reason == 'T2:PwrState-Sel':
+            ############ISSO DEVE IR PARA O PROCESS THREAD
+            self.setParam('T2:PwrState-Sel',value)########
+            self.updatePVs()##########################
+            ######################################
+            #INSERIR NA QUEUE RESPECTIVA O VALOR a ser escrito,
+            #e a porta a ser desativada
+        else:
             return False
 
 '''
