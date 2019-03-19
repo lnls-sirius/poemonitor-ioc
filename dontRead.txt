@@ -37,11 +37,6 @@ Fazer thread para buscar na API o valor e traduzir esse valor para oq mostrar na
     -> criar toda a thread scan
         -> criar os eventos para inserir os gets periodicos
 
-#####PAREI AQUI #######
-
-definir valores iniciais para PV de seleção(put)
-TESTAR ELAS
-
 -> criar as thread process para cada fila
     ->executar leitura de valores (ok)
     ->executar escrita de valores
@@ -52,6 +47,12 @@ fazer pela função write a permissão de escrita na devida pv, e isso faz com q
 ele insira uma requisição de escrita TUPLA -> ("NOME DA REQUISIÇÃO", VALOR) na fila do respectivo switch que dps será processada pela thread process
 e ai sim alterado seu valor pelo valor requisitado
 
+#####PAREI AQUI #######
+
+definir valores iniciais para PV de seleção(put)
+TESTAR ELAS
+
+inserir valores de alerta para as PVs
 
 colocar o logout no reqester
 
@@ -78,6 +79,8 @@ A CONEXÃO QND ELA VOLTAR A FICAR ATIVA
     ->POSSIVEL SOLUÇÃO, ARMAZENAR TODOS OS DADOS DE CONEXÃO RPESENTES NO ARQUIVO DE CONFIGURAÇÃO EM UM LISTA E USAR ESSES DADOS DA LISTA
     NA REALIZAÇÃO DAS CONEXÕES, CASO PERCA-SE A CONEXÃO ENTRA-SE EM UM LOOP INFINITO TENTADO RESTABELECE-LA, PELO ID SER LINKADO AO ID
     DA THREAD, DA PARA SABER EXATAMENTE QUAL FOI O SWITCH PERDIDO E QUAL O ENDEREÇO QUE DEVEMOS TENTAR RECUPERAR
+
+OQUE ACONTECE SE O SWITCH FOR ESETADO, OS VALORES DAS PVS FICAM INCONSISTENTES?
 
 COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
 
