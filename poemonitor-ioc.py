@@ -8,12 +8,13 @@
 #source_5 = https://docs.python.org/3/library/queue.html
 #source_6 = https://docs.python.org/3.4/library/threading.html
 #source_7 = https://www.tutorialspoint.com/python/python_files_io.htm
+#source_8 - https://www.youtube.com/watch?v=pmIm7GeOZds
 
 import json
 import requests         #Library for making HTTP requests
 import threading
 from time import sleep
-from pcaspy import Driver, SimpleServer #Library creation and manipulation of EPICS PVs
+from pcaspy import Driver, SimpleServer, Alarm, Severity #Library creation and manipulation of EPICS PVs
 from queue import Queue
 
 #Configuration filename
@@ -55,51 +56,45 @@ pvdb = {
 #Class to perform requests for an Aruba switch via it's REST API
 class ArubaApiRequester():
 
-    #Constructor
     def __init__(self,ip,port):
         self.apiIp = ip
         self.apiPort = port
-        self.apiUrl = 'http://'+ self.apiIp +':'+ self.apiPort +'/rest/v1/'
+        self.apiUrl = 'http://'+ self.apiIp +':'+ self.apiPort +'/rest/v3/'
 
-    #Functions
     def login(self,username,password):
         try:
             service = 'login-sessions'
             r = requests.post(self.apiUrl + '' + service,json={
-                'userName':username,
-                'password':password,
+                "userName":username,
+                "password":password,
                 })
             self.cookie = dict(r.json())
             return r
         except:
             print('Login attempt failed')
             return r
-
-    def request(self,httpMethod,service):
+    #Data parameter shall be a dictionary with the folling format -> {'cmd':<COMMAND>}
+    def request(self,httpMethod,service,data=None):
         try:
             if(httpMethod == 'get'):
-                r = requests.get(self.apiUrl + '' + service,cookies=self.cookie)
+                r = requests.get(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
                 return r
             elif(httpMethod == 'post'):
-                r = requests.post(self.apiUrl + '' + service,cookies=self.cookie)
+                r = requests.post(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
                 return r
             elif(httpMethod == 'put'):
-                r = requests.put(self.apiUrl + '' + service,cookies=self.cookie)
+                r = requests.put(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
                 return r
             elif(httpMethod == 'delete'):
-                r = requests.delete(self.apiUrl + '' + service,cookies=self.cookie)
+                r = requests.delete(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
                 return r
         except:
             print('Request failed')
             return r
 
     def logout(self):
-        try:
-            service = 'login-sessions'
-            r = request('delete',service)
-        except:
-            print('Logout attempt failed')
-            return r
+        service = 'login-sessions'
+        request("delete",service)
 
 #Class to read poemonitor-ioc configure file
 class PoemonitorConfigReader():
@@ -118,12 +113,17 @@ class PoemonitorConfigReader():
     def getDevicesFrom(self,queueId,fileData):
         return fileData['switches'][queueId]['devices']
 
-    def getQueueIdByDeviceName(self,deviceName,fileData):
-        for i in range(0, len(r['switches'])):
-            for j in r['switches'][i]['devices']:
+    def getQueueIdByDeviceNameFrom(self,deviceName,fileData):
+        for i in range(0, len(fileData['switches'])):
+            for j in fileData['switches'][i]['devices']:
                 if j['name'] == 'T1':
                     return i
         return False
+
+    def getDevicePortByDeviceNameFrom(self,queueId,deviceName,fileData):
+        for i in fileData['switches'][queueId]['devices']:
+            if deviceName in i["name"]:
+                return i['port']
 
 #Class responsible for reacting to PV read/write requests
 class PoemonitorDriver(Driver):
@@ -161,7 +161,7 @@ class PoemonitorDriver(Driver):
         #Periodically inserts read requests into each request queue
         while(True):
             for i in self.ListOfQueues:
-                i.put(['READ_POE_PORT_STATUS'])
+                i.put({'request_type':'READ_POE_PORT_STATUS'})
                 #DEBUG
                 print(i.qsize())
             self.event.wait(SCAN_DELAY)
@@ -180,7 +180,7 @@ class PoemonitorDriver(Driver):
                  request = self.ListOfQueues[queueId].get(block=True)
 
                  #Execute requests
-                 if(request[0] == 'READ_POE_PORT_STATUS'):
+                 if(request['request_type'] == 'READ_POE_PORT_STATUS'):
 
                      #For each device registered linked to switch on configuration file
                      for device in self.configReader.getDevicesFrom(queueId,self.configData):
@@ -202,27 +202,45 @@ class PoemonitorDriver(Driver):
                              self.setParam(device['name']+':PwrState-Sts',0)
                          self.updatePVs()
 
+                 elif(request['request_type'] == 'CHANGE_POE_PORT_STATUS'):
+                     if(request['value'] == 0):
+                         command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
+                         r = req.request('post','cli',data=command)
+                         #INSERIR A REQUEST AQUI
+                         self.setParam(request['reason'],request['value'])
+                         self.updatePVs()
+                     else:
+                          command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
+                          r = req.request('post','cli',data=command)
+                          #INSERIR A REQUEST AQUI
+                          self.setParam(request['reason'],request['value'])
+                          self.updatePVs()
+
+
+                     print()
+
         except Exception as e:
-            print("Exception thrown by queue's "+queueId+"process thread\nException: "+e)
+            print("Exception thrown by queue's "+str(queueId)+"process thread\nException: "+e)
             req.logout()
 
 
     def write(self,reason,value):
 
-        if reason == 'T1:PwrState-Sel':
-            ############ISSO DEVE IR PARA O PROCESS THREAD
-            self.setParam('T1:PwrState-Sel',value)#######
-            self.updatePVs()#################
-            ##################################
-            #INSERIR NA QUEUE RESPECTIVA O VALOR a ser escrito,
-            #e a porta a ser desativada
-        elif reason == 'T2:PwrState-Sel':
-            ############ISSO DEVE IR PARA O PROCESS THREAD
-            self.setParam('T2:PwrState-Sel',value)########
-            self.updatePVs()##########################
-            ######################################
-            #INSERIR NA QUEUE RESPECTIVA O VALOR a ser escrito,
-            #e a porta a ser desativada
+        #Get queue ID
+        deviceName = reason.split(':')
+        queueId = self.configReader.getQueueIdByDeviceNameFrom(deviceName[0],self.configData)
+
+        #Get Device port
+        devicePort = self.configReader.getDevicePortByDeviceNameFrom(queueId,deviceName[0],self.configData)
+
+        #Create request
+        request = {'request_type':'CHANGE_POE_PORT_STATUS','reason':reason,'port':devicePort,'value':value}
+
+        #Check if PV has write permission
+        if reason == 'T1:PwrState-Sel' or reason == 'T2:PwrState-Sel':
+
+            #Only insert request for valid PV names
+            self.ListOfQueues[queueId].put(request)
         else:
             return False
 
