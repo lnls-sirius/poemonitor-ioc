@@ -47,14 +47,21 @@ fazer pela função write a permissão de escrita na devida pv, e isso faz com q
 ele insira uma requisição de escrita TUPLA -> ("NOME DA REQUISIÇÃO", VALOR) na fila do respectivo switch que dps será processada pela thread process
 e ai sim alterado seu valor pelo valor requisitado
 
-#####PAREI AQUI #######
+testar colocar um alarme nop set param e ver oque da
+    -> IMPORTANTE-> VALOR 10 DE ALARM (TIMEOUT) é o comumente usado para qnd a PV está desconectado
 
 definir valores iniciais para PV de seleção(put)
 TESTAR ELAS
 
+OQUE ACONTECE SE O SWITCH FOR ESETADO, OS VALORES DAS PVS FICAM INCONSISTENTES?
+    -> isso ja foi tratado com a atualização da PV de seleção juntamente com a PV de status em todo processo de scan
+
 inserir valores de alerta para as PVs
 
-colocar o logout no reqester
+#####PAREI AQUI #######
+colocar o logout no requester
+
+ignorar a medida incorreta da PV de seleção qnd muda o estado dela?
 
 tela do css -> baixar ultima versão de produção do ESS
 
@@ -65,6 +72,7 @@ inserir no inicio do código breve descrição de seu propósito
 color nome do autor
 
 ######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????####################
+    ->Aparentemente as requisições REST não consomem praticamente nada da RAM
 
 EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT
 
@@ -80,7 +88,7 @@ A CONEXÃO QND ELA VOLTAR A FICAR ATIVA
     NA REALIZAÇÃO DAS CONEXÕES, CASO PERCA-SE A CONEXÃO ENTRA-SE EM UM LOOP INFINITO TENTADO RESTABELECE-LA, PELO ID SER LINKADO AO ID
     DA THREAD, DA PARA SABER EXATAMENTE QUAL FOI O SWITCH PERDIDO E QUAL O ENDEREÇO QUE DEVEMOS TENTAR RECUPERAR
 
-OQUE ACONTECE SE O SWITCH FOR ESETADO, OS VALORES DAS PVS FICAM INCONSISTENTES?
+
 
 COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
 
