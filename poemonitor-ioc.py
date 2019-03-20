@@ -14,7 +14,7 @@ import json
 import requests         #Library for making HTTP requests
 import threading
 from time import sleep
-from pcaspy import Driver, SimpleServer, Alarm, Severity #Library creation and manipulation of EPICS PVs
+from pcaspy import Driver, SimpleServer #Library creation and manipulation of EPICS PVs
 from queue import Queue
 
 #Configuration filename
@@ -125,6 +125,13 @@ class PoemonitorConfigReader():
             if deviceName in i["name"]:
                 return i['port']
 
+    def getAllDeviceNamesFrom(self,fileData):
+        devices = []
+        for switch in fileData['switches']:
+            for device in switch['devices']:
+                devices.append(device['name'])
+        return devices
+
 #Class responsible for reacting to PV read/write requests
 class PoemonitorDriver(Driver):
 
@@ -136,6 +143,15 @@ class PoemonitorDriver(Driver):
         #Read configuration file content
         self.configReader = PoemonitorConfigReader()
         self.configData = self.configReader.readFile(CONFIG_FILE_NAME)
+
+        #Set initial value for writable PVs
+        deviceNames = self.configReader.getAllDeviceNamesFrom(self.configData)
+        for i in deviceNames:
+            #Update PVs values
+            if self.getParam(i + ':PwrState-Sts') == 0:
+                self.setParam(i + ':PwrState-Sel',0)
+            else:
+                self.setParam(i + ':PwrState-Sel',1)
 
         #Create one request queue for each switch
         for i in range(0, self.configReader.getNumberOfSwitchesFrom(self.configData)):
@@ -155,7 +171,6 @@ class PoemonitorDriver(Driver):
             th.setDaemon(True)
             th.start()
 
-
     def scanThread(self):
 
         #Periodically inserts read requests into each request queue
@@ -166,7 +181,6 @@ class PoemonitorDriver(Driver):
                 print(i.qsize())
             self.event.wait(SCAN_DELAY)
 
-    #Responsável por tratar('consumir') cada requisição dentro da fila. Cada fila tera sua própria
     #Thread executando essa função.
     def processThread(self,queueId):
 
@@ -198,31 +212,31 @@ class PoemonitorDriver(Driver):
 
                          if(r['poe_detection_status'] == 'PPDS_DELIVERING'):
                              self.setParam(device['name']+':PwrState-Sts',1)
+                             self.setParam(device['name']+':PwrState-Sel',1)
                          else:
                              self.setParam(device['name']+':PwrState-Sts',0)
+                             self.setParam(device['name']+':PwrState-Sel',0)
                          self.updatePVs()
 
                  elif(request['request_type'] == 'CHANGE_POE_PORT_STATUS'):
                      if(request['value'] == 0):
+                         #Request state update on switch
                          command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
                          r = req.request('post','cli',data=command)
-                         #INSERIR A REQUEST AQUI
+                         #PV update
                          self.setParam(request['reason'],request['value'])
                          self.updatePVs()
                      else:
+                          #Request state update on switch
                           command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
                           r = req.request('post','cli',data=command)
-                          #INSERIR A REQUEST AQUI
+                           #PV update
                           self.setParam(request['reason'],request['value'])
                           self.updatePVs()
-
-
-                     print()
 
         except Exception as e:
             print("Exception thrown by queue's "+str(queueId)+"process thread\nException: "+e)
             req.logout()
-
 
     def write(self,reason,value):
 
