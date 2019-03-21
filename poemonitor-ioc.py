@@ -144,15 +144,6 @@ class PoemonitorDriver(Driver):
         self.configReader = PoemonitorConfigReader()
         self.configData = self.configReader.readFile(CONFIG_FILE_NAME)
 
-        #Set initial value for writable PVs
-        deviceNames = self.configReader.getAllDeviceNamesFrom(self.configData)
-        for i in deviceNames:
-            #Update PVs values
-            if self.getParam(i + ':PwrState-Sts') == 0:
-                self.setParam(i + ':PwrState-Sel',0)
-            else:
-                self.setParam(i + ':PwrState-Sel',1)
-
         #Create one request queue for each switch
         for i in range(0, self.configReader.getNumberOfSwitchesFrom(self.configData)):
             self.ListOfQueues.append(Queue())
@@ -172,7 +163,16 @@ class PoemonitorDriver(Driver):
             th.start()
 
     def scanThread(self):
+        '''
+        self.event.wait(SCAN_INIT_DELAY)
 
+        #Set initial value for writable PVs
+        deviceNames = self.configReader.getAllDeviceNamesFrom(self.configData)
+        for i in deviceNames:
+            #Update PVs values
+            sts = self.getParam(i + ':PwrState-Sel')
+            self.setParam(i + ':PwrState-Sel',sts)
+        '''
         #Periodically inserts read requests into each request queue
         while(True):
             for i in self.ListOfQueues:
@@ -183,60 +183,71 @@ class PoemonitorDriver(Driver):
 
     #Thread executando essa função.
     def processThread(self,queueId):
+        #Reconnection loop #CONTINUAR A MONTAGEM DESSE LOOP, COLOCAR A TENTATIVA DE CONEXÃO DENTRO DE UM LOOP, CASO DE TIMEOUT MANTÉM EM LOOP INFINITO
+        #CASO NÃO DER, SETAR UMA FLAG CONNECTADO COMO TRUE E PERMITIR A PASSAGEM PARA O PROCESSAMENTO DE REQUISIÇÃO, ESSA FLAG DEVE SER GLOBAL DENTRO
+        #DA CLASSE PARA QUE SEJA POSSÍVEL BLOQUEAR A INSERÇÃOD E REQUISIÇÕES PELA THREAD SCAN
+        while(True):
+            try:
+                loginData = self.configReader.getLoginDataFrom(queueId,self.configData)
+                #REST API request URL
+                apiUrl ='http://'+ loginData['ip'] +':'+ loginData['port'] +'/rest/v3/'
 
-        try:
-            loginData = self.configReader.getLoginDataFrom(queueId,self.configData)
-            #REST API connection initialization
-            req = ArubaApiRequester(loginData['ip'],loginData['port'])
-            r = req.login(loginData['username'],loginData['password'])
+                #REST API connection initialization
+                r = requests.request(method='post',url=apiUrl + 'login-sessions', json={
+                    'userName':loginData['username'],
+                    'password':loginData['password']
+                    })
+                cookie = dict(r.json())
 
-            while(True):
-                 request = self.ListOfQueues[queueId].get(block=True)
+                while(True):
+                     request = self.ListOfQueues[queueId].get(block=True)
 
-                 #Execute requests
-                 if(request['request_type'] == 'READ_POE_PORT_STATUS'):
+                     #Execute requests
+                     if request['request_type'] == 'READ_POE_PORT_STATUS':
 
-                     #For each device registered linked to switch on configuration file
-                     for device in self.configReader.getDevicesFrom(queueId,self.configData):
+                         #For each device registered linked to switch on configuration file
+                         for device in self.configReader.getDevicesFrom(queueId,self.configData):
 
-                         #Request POE port status using switch's REST API
-                         r = req.request('get','ports/'+device['port']+'/poe/stats')
-                         r = dict(r.json())
+                             #Request POE port status using switch's REST API
+                             r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie)
+                             r = dict(r.json())
+                             #DEBUG
+                             #print('updated PVs     queueID = ' + str(queueId))
+                             print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 
-                         #DEBUG
-                         #print('updated PVs     queueID = ' + str(queueId))
-                         print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+                             #Update PVs values
+                             self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
 
-                         #Update PVs values
-                         self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
+                             if r['poe_detection_status'] == 'PPDS_DELIVERING' :
+                                 self.setParam(device['name']+':PwrState-Sts',1)
+                             else:
+                                 self.setParam(device['name']+':PwrState-Sts',0)
+                             self.updatePVs()
 
-                         if(r['poe_detection_status'] == 'PPDS_DELIVERING'):
-                             self.setParam(device['name']+':PwrState-Sts',1)
-                             self.setParam(device['name']+':PwrState-Sel',1)
+                     elif request['request_type'] == 'CHANGE_POE_PORT_STATUS' :
+                         if request['value'] == 0 :
+                             #Request state update on switch
+                             command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
+                             r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
+
+                             #PV update
+                             self.setParam(request['reason'],request['value'])
+                             self.updatePVs()
                          else:
-                             self.setParam(device['name']+':PwrState-Sts',0)
-                             self.setParam(device['name']+':PwrState-Sel',0)
-                         self.updatePVs()
+                              #Request state update on switch
+                              command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
+                              r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
 
-                 elif(request['request_type'] == 'CHANGE_POE_PORT_STATUS'):
-                     if(request['value'] == 0):
-                         #Request state update on switch
-                         command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
-                         r = req.request('post','cli',data=command)
-                         #PV update
-                         self.setParam(request['reason'],request['value'])
-                         self.updatePVs()
-                     else:
-                          #Request state update on switch
-                          command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
-                          r = req.request('post','cli',data=command)
-                           #PV update
-                          self.setParam(request['reason'],request['value'])
-                          self.updatePVs()
-
-        except Exception as e:
-            print("Exception thrown by queue's "+str(queueId)+"process thread\nException: "+e)
-            req.logout()
+                              #PV update
+                              self.setParam(request['reason'],request['value'])
+                              self.updatePVs()
+            except ConnectTimeout:
+                #DEBUG
+                print('TESTE')
+                #Logout
+                #r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
+                #print("Something wrong happened while processing queue " + str(queueId))
+                #req.logout()
 
     def write(self,reason,value):
 
