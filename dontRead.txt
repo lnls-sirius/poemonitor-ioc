@@ -58,10 +58,26 @@ OQUE ACONTECE SE O SWITCH FOR ESETADO, OS VALORES DAS PVS FICAM INCONSISTENTES?
 
 inserir valores de alerta para as PVs
 
-#####PAREI AQUI #######
-colocar o logout no requester
+Concertar a obtenção da PV seletora, ela é apenas para saber qnd foi escrito ou não. INiciar uma vez no scan e dps não mais
 
-ignorar a medida incorreta da PV de seleção qnd muda o estado dela?
+USAR A CLASSE SESSION DA BIBLIOTECA REQUESTS NO LUGAR DA CLASSE CRIADA POR MIM ARUBAREQUESTER (Faz mais sentido)
+    ->substituir todos os usos
+    ->deletar a classe do código
+
+#####PAREI AQUI #######
+
+VER LINHA 186
+
+colocar o logout no requester
+    -> qualquer exeção gerada no meio da conexão , que não seja connexction lost , requisitar um logout
+    -> em casos de perda de conexão, como tratar o logout???
+        ->para a inserção de requisições na fila, limpa as filas?
+        -> IDEIA: Configurar o timeout de seção do switch para valores pequenos, considerando q sempre será realizada requisições em curto periodo de temopo
+        ele não deve ocorrer durante um funcionamento comum
+        ->tratar excessão de timeout de chamada
+            -> isso deve ser feito apenas nos envios de put da PV de seleção, pois as outras são lidas periodicamente, caso aconteça o timeout do put
+                deve-se inserir um alerta na PV
+    -> Fazer o código se recuperar de perdas de conexão
 
 tela do css -> baixar ultima versão de produção do ESS
 
@@ -87,8 +103,6 @@ A CONEXÃO QND ELA VOLTAR A FICAR ATIVA
     ->POSSIVEL SOLUÇÃO, ARMAZENAR TODOS OS DADOS DE CONEXÃO RPESENTES NO ARQUIVO DE CONFIGURAÇÃO EM UM LISTA E USAR ESSES DADOS DA LISTA
     NA REALIZAÇÃO DAS CONEXÕES, CASO PERCA-SE A CONEXÃO ENTRA-SE EM UM LOOP INFINITO TENTADO RESTABELECE-LA, PELO ID SER LINKADO AO ID
     DA THREAD, DA PARA SABER EXATAMENTE QUAL FOI O SWITCH PERDIDO E QUAL O ENDEREÇO QUE DEVEMOS TENTAR RECUPERAR
-
-
 
 COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
 
