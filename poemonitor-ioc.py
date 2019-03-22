@@ -22,6 +22,10 @@ CONFIG_FILE_NAME = 'poemonitor.config'
 
 #Delay, in seconds, to insert a new read request into a queue
 SCAN_DELAY = 1
+#Maximum number of request retries for considering connection lost
+MAX_RETRIES = 3
+#Request queue limit size for avoiding uncontrolled growth
+QUEUE_SIZE_LIMIT = 100
 
 #PVs defenitions
 prefix = 'TESTE:'
@@ -52,49 +56,6 @@ pvdb = {
         'enums' :   ['Off','On'],
     }
 }
-
-#Class to perform requests for an Aruba switch via it's REST API
-class ArubaApiRequester():
-
-    def __init__(self,ip,port):
-        self.apiIp = ip
-        self.apiPort = port
-        self.apiUrl = 'http://'+ self.apiIp +':'+ self.apiPort +'/rest/v3/'
-
-    def login(self,username,password):
-        try:
-            service = 'login-sessions'
-            r = requests.post(self.apiUrl + '' + service,json={
-                "userName":username,
-                "password":password,
-                })
-            self.cookie = dict(r.json())
-            return r
-        except:
-            print('Login attempt failed')
-            return r
-    #Data parameter shall be a dictionary with the folling format -> {'cmd':<COMMAND>}
-    def request(self,httpMethod,service,data=None):
-        try:
-            if(httpMethod == 'get'):
-                r = requests.get(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
-                return r
-            elif(httpMethod == 'post'):
-                r = requests.post(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
-                return r
-            elif(httpMethod == 'put'):
-                r = requests.put(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
-                return r
-            elif(httpMethod == 'delete'):
-                r = requests.delete(self.apiUrl + '' + service,cookies=self.cookie,data=json.dumps(data))
-                return r
-        except:
-            print('Request failed')
-            return r
-
-    def logout(self):
-        service = 'login-sessions'
-        request("delete",service)
 
 #Class to read poemonitor-ioc configure file
 class PoemonitorConfigReader():
@@ -136,7 +97,7 @@ class PoemonitorConfigReader():
 class PoemonitorDriver(Driver):
 
     ListOfQueues = []
-
+    connected = False
     def  __init__(self):
         super(PoemonitorDriver, self).__init__()
 
@@ -176,21 +137,31 @@ class PoemonitorDriver(Driver):
         #Periodically inserts read requests into each request queue
         while(True):
             for i in self.ListOfQueues:
-                i.put({'request_type':'READ_POE_PORT_STATUS'})
+                #Control for not exceeding QUEUE_SIZE_LIMIT
+                if(i.qsize() < QUEUE_SIZE_LIMIT):
+                    i.put({'request_type':'READ_POE_PORT_STATUS'})
                 #DEBUG
                 print(i.qsize())
             self.event.wait(SCAN_DELAY)
 
     #Thread executando essa função.
     def processThread(self,queueId):
-        #Reconnection loop #CONTINUAR A MONTAGEM DESSE LOOP, COLOCAR A TENTATIVA DE CONEXÃO DENTRO DE UM LOOP, CASO DE TIMEOUT MANTÉM EM LOOP INFINITO
-        #CASO NÃO DER, SETAR UMA FLAG CONNECTADO COMO TRUE E PERMITIR A PASSAGEM PARA O PROCESSAMENTO DE REQUISIÇÃO, ESSA FLAG DEVE SER GLOBAL DENTRO
-        #DA CLASSE PARA QUE SEJA POSSÍVEL BLOQUEAR A INSERÇÃOD E REQUISIÇÕES PELA THREAD SCAN
+        #Initialize cookie for session control
+        cookie = None
+        #Initialize connection state flag
+        connected = False
+
         while(True):
             try:
                 loginData = self.configReader.getLoginDataFrom(queueId,self.configData)
                 #REST API request URL
                 apiUrl ='http://'+ loginData['ip'] +':'+ loginData['port'] +'/rest/v3/'
+
+                #Logout
+                ##if cookie != None:
+                    #DEBUG
+                    ##print('Cookie')
+                r = requests.request(method='delete',url=apiUrl + 'login-sessions',cookies=cookie)
 
                 #REST API connection initialization
                 r = requests.request(method='post',url=apiUrl + 'login-sessions', json={
@@ -198,56 +169,69 @@ class PoemonitorDriver(Driver):
                     'password':loginData['password']
                     })
                 cookie = dict(r.json())
+                connected = True
+            except requests.exceptions.ConnectionError:
+                print('Login Failed...')
+                connected = False
 
-                while(True):
-                     request = self.ListOfQueues[queueId].get(block=True)
+            if(connected == True):
+                try:
+                    retries = 0
+                    while(True):
+                         request = self.ListOfQueues[queueId].get(block=True)
 
-                     #Execute requests
-                     if request['request_type'] == 'READ_POE_PORT_STATUS':
+                         #Execute requests
+                         if request['request_type'] == 'READ_POE_PORT_STATUS':
 
-                         #For each device registered linked to switch on configuration file
-                         for device in self.configReader.getDevicesFrom(queueId,self.configData):
+                             #For each device registered linked to switch on configuration file
+                             for device in self.configReader.getDevicesFrom(queueId,self.configData):
 
-                             #Request POE port status using switch's REST API
-                             r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie)
-                             r = dict(r.json())
-                             #DEBUG
-                             #print('updated PVs     queueID = ' + str(queueId))
-                             print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+                                 #Retry request control loop
+                                 while (retries < MAX_RETRIES):
+                                     try:
+                                         #Request POE port status using switch's REST API
+                                         r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie,timeout=3)
+                                         r = dict(r.json())
+                                         break
+                                     except requests.exceptions.ReadTimeout:
+                                         retries += 1
+                                 #In case of N_OF_RETRIES fails, consider connection lost
+                                 if(retries >= MAX_RETRIES):
+                                     raise requests.exceptions.ConnectionError
+                                 else:
+                                     retries = 0
+                                 #DEBUG
+                                 #print('updated PVs     queueID = ' + str(queueId))
+                                 print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 
-                             #Update PVs values
-                             self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
+                                 #Update PVs values
+                                 self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
 
-                             if r['poe_detection_status'] == 'PPDS_DELIVERING' :
-                                 self.setParam(device['name']+':PwrState-Sts',1)
+                                 if r['poe_detection_status'] == 'PPDS_DELIVERING' :
+                                     self.setParam(device['name']+':PwrState-Sts',1)
+                                 else:
+                                     self.setParam(device['name']+':PwrState-Sts',0)
+                                 self.updatePVs()
+
+                         elif request['request_type'] == 'CHANGE_POE_PORT_STATUS' :
+                             if request['value'] == 0 :
+                                 #Request state update on switch
+                                 command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
+                                 r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
+
+                                 #PV update
+                                 self.setParam(request['reason'],request['value'])
+                                 self.updatePVs()
                              else:
-                                 self.setParam(device['name']+':PwrState-Sts',0)
-                             self.updatePVs()
+                                  #Request state update on switch
+                                  command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
+                                  r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
 
-                     elif request['request_type'] == 'CHANGE_POE_PORT_STATUS' :
-                         if request['value'] == 0 :
-                             #Request state update on switch
-                             command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
-                             r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
-
-                             #PV update
-                             self.setParam(request['reason'],request['value'])
-                             self.updatePVs()
-                         else:
-                              #Request state update on switch
-                              command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
-                              r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
-
-                              #PV update
-                              self.setParam(request['reason'],request['value'])
-                              self.updatePVs()
-            except ConnectTimeout:
-                #DEBUG
-                print('TESTE')
-                #Logout
-                #r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(data),cookies=cookie)
-                #print("Something wrong happened while processing queue " + str(queueId))
-                #req.logout()
+                                  #PV update
+                                  self.setParam(request['reason'],request['value'])
+                                  self.updatePVs()
+                except requests.exceptions.ConnectionError:
+                    print('Connection Lost...')
 
     def write(self,reason,value):
 
@@ -269,11 +253,6 @@ class PoemonitorDriver(Driver):
         else:
             return False
 
-'''
-#Clear session data - Logout request
-service = 'login-sessions'
-r = req.request('delete',service)
-'''
 #Main routine
 if __name__ == '__main__':
 
