@@ -64,17 +64,15 @@ USAR A CLASSE SESSION DA BIBLIOTECA REQUESTS NO LUGAR DA CLASSE CRIADA POR MIM A
     ->substituir todos os usos
     ->deletar a classe do código
 
-#####PAREI AQUI #######
-
 COISAS PARA DISCUTIR
-    -> LIMITE DO TAMANHO DA FILA PODE SER UM PROBLEMA??? -> NÃO ME AGRADA ESSA SOLUÇÃO NEM UM POUCO
+    -> LIMITE DO TAMANHO DA FILA PODE SER UM PROBLEMA??? -> NÃO ME AGRADA ESSA SOLUÇÃO NEM UM POUCO <- naverdade não faz sentido eu ficar escaneando quando
+    o dispositivo está offline, logo faz sentido travar a thread de scan referente ao switch desconectado.
     -> SE ESTIVER DESCONECTADO JOGAR FORA REQUISIÇÕES DE PUT???
     -> POSSO CONTROLAR ATRAVÉS DE OUTRA FILA QUEM ESTÁ CONECTADO E QUEM ESTÁ DESCONECTADO, EVITANDO O PROBLEMA DE RACE CONDITION
     -> AO INVÉS DE GUARDAR O COOKIE E RESETAR SÓ ELE, VER UM COMANDO QUE SEJA POSSÍVEL EXCLUIR TODOS OS DADOS DE SESSÃO, AFINAL SÓ EXISTE UMA CLIENT
-    -> encapsular em uma função o request com retry passando a função request como parametro dela OU usar signal para avisar trava entre threads???
 
 colocar o logout no requester
-    -> qualquer exeção gerada no meio da conexão , que não seja connexction lost , requisitar um logout
+    -> qualquer exeção gerada no meio da conexão , que não seja connection lost , requisitar um logout
     -> em casos de perda de conexão, como tratar o logout???
         ->para a inserção de requisições na fila, limpa as filas?
         -> IDEIA: Configurar o timeout de seção do switch para valores pequenos, considerando q sempre será realizada requisições em curto periodo de temopo
@@ -84,18 +82,26 @@ colocar o logout no requester
                 deve-se inserir um alerta na PV
     -> Fazer o código se recuperar de perdas de conexão
 
-setar um timer qnd logar para garantir que o switch vai estar ligado, pq ele consegue conectar antes de disponibilizar energia, podendo prejudicas
-os valores salvos????
+colocarr nome do autor
 
-tratar overflow no número de sessõ0es se necessário -> testar isso <- COM O MECANISMO DE RESET GERAL ACHO QUE NÃO PRECISARÁ
+#####PAREI AQUI #######
+
+ANALISAR A LEITURA INICIAL DAS PVs -SEL
+
+CRIAR DINAMICAMENTE AS PVS BASEADAS NO ARQUIVO .CONF e incluir os nomes das variaveis passiveis de serem escritas na função write de maneira dinamica
+
+setar um timer qnd logar para garantir que o switch vai estar ligado, pq ele consegue conectar antes de disponibilizar energia, podendo prejudicas
+os valores salvos???? <- acredito acontecer "raramente" isso
+
+tratar overflow no número de sessõ0es se necessário -> testar isso <- COM O MECANISMO DE RESET GERAL ACHO QUE NÃO PRECISARÁ <- Não encontrei um COMANDO
+que faça isso, contudio reduzi para 2 minutos o tempo de logout de sessão ociosa
 
 adicionar PVs no archivers
 
 inserir no inicio do código breve descrição de seu propósito
+    -> inserir link para documento de especificação do padrão de armazenamento de confiogurações do arquivo .config
 
-color nome do autor
-
-
+fazer teste enm uma situação real com mais de 1 switch
 
 ######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????####################
     ->Aparentemente as requisições REST não consomem praticamente nada da RAM
