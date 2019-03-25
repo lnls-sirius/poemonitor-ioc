@@ -24,8 +24,6 @@ CONFIG_FILE_NAME = 'poemonitor.config'
 SCAN_DELAY = 1
 #Maximum number of request retries for considering connection lost
 MAX_RETRIES = 3
-#Request queue limit size for avoiding uncontrolled growth
-QUEUE_SIZE_LIMIT = 100
 
 #PVs defenitions
 prefix = 'TESTE:'
@@ -77,7 +75,7 @@ class PoemonitorConfigReader():
     def getQueueIdByDeviceNameFrom(self,deviceName,fileData):
         for i in range(0, len(fileData['switches'])):
             for j in fileData['switches'][i]['devices']:
-                if j['name'] == 'T1':
+                if j['name'] == deviceName:
                     return i
         return False
 
@@ -93,10 +91,12 @@ class PoemonitorConfigReader():
                 devices.append(device['name'])
         return devices
 
+
 #Class responsible for reacting to PV read/write requests
 class PoemonitorDriver(Driver):
 
-    ListOfQueues = []
+    connectionStatusList = []
+    listOfQueues = []
     connected = False
     def  __init__(self):
         super(PoemonitorDriver, self).__init__()
@@ -105,9 +105,10 @@ class PoemonitorDriver(Driver):
         self.configReader = PoemonitorConfigReader()
         self.configData = self.configReader.readFile(CONFIG_FILE_NAME)
 
-        #Create one request queue for each switch
+        #Create one request queue for each switch and set their connetion status as disconnected
         for i in range(0, self.configReader.getNumberOfSwitchesFrom(self.configData)):
-            self.ListOfQueues.append(Queue())
+            self.listOfQueues.append(Queue())
+            self.connectionStatusList.append(False)
 
         #Event object used for periodically read the PVs values
         self.event = threading.Event()
@@ -118,7 +119,7 @@ class PoemonitorDriver(Driver):
         self.scan.start()
 
         #Define and start all the process threads
-        for i in range(0,len(self.ListOfQueues)):
+        for i in range(0,len(self.listOfQueues)):
             th = threading.Thread(target = self.processThread, args=[i])
             th.setDaemon(True)
             th.start()
@@ -136,20 +137,21 @@ class PoemonitorDriver(Driver):
         '''
         #Periodically inserts read requests into each request queue
         while(True):
-            for i in self.ListOfQueues:
-                #Control for not exceeding QUEUE_SIZE_LIMIT
-                if(i.qsize() < QUEUE_SIZE_LIMIT):
-                    i.put({'request_type':'READ_POE_PORT_STATUS'})
+            queueId = 0
+            print(self.connectionStatusList)
+            for i in self.connectionStatusList:
+                #Check if switch is connected
+                if(i == True):
+                    self.listOfQueues[queueId].put({'request_type':'READ_POE_PORT_STATUS'})
                 #DEBUG
-                print(i.qsize())
+                print(self.listOfQueues[queueId].qsize())
+                queueId += 1
             self.event.wait(SCAN_DELAY)
 
     #Thread executando essa função.
     def processThread(self,queueId):
         #Initialize cookie for session control
         cookie = None
-        #Initialize connection state flag
-        connected = False
 
         while(True):
             try:
@@ -169,21 +171,21 @@ class PoemonitorDriver(Driver):
                     'password':loginData['password']
                     })
                 cookie = dict(r.json())
-                connected = True
+                self.connectionStatusList[queueId] = True
             except requests.exceptions.ConnectionError:
                 print('Login Failed...')
-                connected = False
+                self.connectionStatusList[queueId] = False
 
-            if(connected == True):
+            if(self.connectionStatusList[queueId] == True):
                 try:
                     retries = 0
                     while(True):
-                         request = self.ListOfQueues[queueId].get(block=True)
+                         request = self.listOfQueues[queueId].get(block=True)
 
                          #Execute requests
                          if request['request_type'] == 'READ_POE_PORT_STATUS':
 
-                             #For each device registered linked to switch on configuration file
+                             #For each registered device linked to switch on configuration file
                              for device in self.configReader.getDevicesFrom(queueId,self.configData):
 
                                  #Retry request control loop
@@ -195,8 +197,9 @@ class PoemonitorDriver(Driver):
                                          break
                                      except requests.exceptions.ReadTimeout:
                                          retries += 1
-                                 #In case of N_OF_RETRIES fails, consider connection lost
+                                 #In case of MAX_RETRIES fails, consider connection lost
                                  if(retries >= MAX_RETRIES):
+                                     #AQUI VAI ENTRAR O BLOQUEIO DA THREAD DE SCAN
                                      raise requests.exceptions.ConnectionError
                                  else:
                                      retries = 0
@@ -231,6 +234,9 @@ class PoemonitorDriver(Driver):
                                   self.setParam(request['reason'],request['value'])
                                   self.updatePVs()
                 except requests.exceptions.ConnectionError:
+                    self.connectionStatusList[queueId] = False
+                    #Remove all requests inserted while switch has been disconnected
+                    self.listOfQueues[queueId].clear()
                     print('Connection Lost...')
 
     def write(self,reason,value):
@@ -249,7 +255,7 @@ class PoemonitorDriver(Driver):
         if reason == 'T1:PwrState-Sel' or reason == 'T2:PwrState-Sel':
 
             #Only insert request for valid PV names
-            self.ListOfQueues[queueId].put(request)
+            self.listOfQueues[queueId].put(request)
         else:
             return False
 
@@ -263,15 +269,3 @@ if __name__ == '__main__':
     # process CA transactions
     while True:
         server.process(0.1)
-
-'''
-#Request poe port status from all switch ports
-service = 'poe/ports/stats'
-
-r = req.request('get',service,cookie)
-#Print data
-r = dict(r.json())
-for v in r['port_poe_stats']:
-    print('Port: ' + v['port_id'] + '   status: ' + v['poe_detection_status'])
-
-'''
