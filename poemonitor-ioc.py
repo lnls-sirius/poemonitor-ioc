@@ -43,41 +43,7 @@ CONFIG_FILE_NAME = 'poemonitor.config'
 SCAN_DELAY = 1
 
 #Maximum number of request retries for considering connection lost
-MAX_RETRIES = 3
-
-
-prefix = 'Teste:'
-pvdb = {
-
-    #PoE status PVs
-
-    'T1:PwrState-Sts' : {
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    'T2:PwrState-Sts' : {
-
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    'T1:PwrState-Raw' : {
-        'type'  :   'string'
-    },
-    'T2:PwrState-Raw' : {
-        'type'  :   'string'
-    },
-
-    #PoE enable/disable selector PVs
-
-    'T1:PwrState-Sel' : {
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    },
-    'T2:PwrState-Sel' : {
-        'type'  :   'enum',
-        'enums' :   ['Off','On'],
-    }
-}
+MAX_RETRIES = 1
 
 #Class responsible for reading poemonitor-ioc configuration file
 class PoemonitorConfigReader():
@@ -155,15 +121,11 @@ class PoemonitorDriver(Driver):
 
         #Periodically inserts read requests into each request queue
         while(True):
-            queueId = 0
             print(self.connectionStatusList)
-            for i in self.connectionStatusList:
-                #Check if switch is connected
-                if(i == True):
-                    self.listOfQueues[queueId].put({'request_type':'READ_POE_PORT_STATUS'})
+            for i in self.listOfQueues:
+                i.put({'request_type':'READ_POE_PORT_STATUS'})
                 #DEBUG
-                print(self.listOfQueues[queueId].qsize())
-                queueId += 1
+                print(i.qsize())
             self.event.wait(SCAN_DELAY)
 
     def processThread(self,queueId):
@@ -180,18 +142,23 @@ class PoemonitorDriver(Driver):
                     #DEBUG
                     ##if cookie != None:
                     ##print('Cookie')
-                r = requests.request(method='delete',url=apiUrl + 'login-sessions',cookies=cookie)
+
+                r = requests.request(method='delete',url=apiUrl + 'login-sessions',cookies=cookie,timeout=1)
 
                 #REST API connection initialization
                 r = requests.request(method='post',url=apiUrl + 'login-sessions', json={
                     'userName':loginData['username'],
                     'password':loginData['password']
-                    })
+                    },timeout=1)
                 cookie = dict(r.json())
                 self.connectionStatusList[queueId] = True
             except requests.exceptions.ConnectionError:
                 print('Login Failed...')
                 self.connectionStatusList[queueId] = False
+
+            #===========================================================#
+            #==      Request processing when connected to switch      ==#
+            #===========================================================#
 
             if(self.connectionStatusList[queueId] == True):
                 try:
@@ -201,7 +168,7 @@ class PoemonitorDriver(Driver):
 
                          #Execute requests
 
-                         #========REQUEST FOR RECOVERING POE STATUS FROM SWITCH PORTS========
+                         #========Request for recovering PoE status from switch ports========
                          if request['request_type'] == 'READ_POE_PORT_STATUS':
 
                              #For each registered device linked to switch on configuration file
@@ -211,7 +178,7 @@ class PoemonitorDriver(Driver):
                                  while (retries < MAX_RETRIES):
                                      try:
                                          #Request POE port status using switch's REST API
-                                         r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie,timeout=10)
+                                         r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie,timeout=1)
                                          r = dict(r.json())
                                          break
                                      except requests.exceptions.ReadTimeout:
@@ -235,55 +202,35 @@ class PoemonitorDriver(Driver):
                                      self.setParam(device['name']+':PwrState-Sts',0)
                                  self.updatePVs()
 
-                         #========REQUEST FOR ENABLING/DISABLING POE ON SWITCH PORTS========
+                         #========Request for enabling/disabling PoE on switch ports========
 
                          elif request['request_type'] == 'CHANGE_POE_PORT_STATUS' :
                              if request['value'] == 0 :
-
                                  command = {'cmd':'no interface '+request['port']+' power-over-ethernet'}
-
-                                 #Retry request control loop
-                                 while (retries < MAX_RETRIES):
-                                     try:
-                                          #Request state update on switch
-                                          r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(command),cookies=cookie,timeout=10)
-                                          break
-                                     except requests.exceptions.ReadTimeout:
-                                          retries += 1
-
-                                  #In case of MAX_RETRIES fails, consider connection lost
-                                 if(retries >= MAX_RETRIES):
-                                     raise requests.exceptions.ConnectionError
-                                 else:
-                                     retries = 0
-
-                                 #PV update
-                                 self.setParam(request['reason'],request['value'])
-                                 self.updatePVs()
                              else:
                                   #Request state update on switch
                                   command = {'cmd':'interface '+request['port']+' power-over-ethernet'}
 
-                                  #Retry request control loop
-                                  while (retries < MAX_RETRIES):
-                                      try:
-                                           #Request state update on switch
-                                           r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(command),cookies=cookie,timeout=10)
-                                           break
-                                      except requests.exceptions.ReadTimeout:
-                                           retries += 1
+                              #Retry request control loop
+                             while (retries < MAX_RETRIES):
+                                  try:
+                                       #Request state update on switch
+                                       r = requests.request(method='post',url=apiUrl + 'cli',data=json.dumps(command),cookies=cookie,timeout=1)
+                                       break
+                                  except requests.exceptions.ReadTimeout:
+                                       retries += 1
 
-                                  #In case of MAX_RETRIES fails, consider connection lost
-                                  if(retries >= MAX_RETRIES):
-                                      raise requests.exceptions.ConnectionError
-                                  else:
-                                      retries = 0
+                              #In case of MAX_RETRIES fails, consider connection lost
+                             if(retries >= MAX_RETRIES):
+                                 raise requests.exceptions.ConnectionError
+                             else:
+                                 retries = 0
 
-                                  #PV update
-                                  self.setParam(request['reason'],request['value'])
-                                  self.updatePVs()
+                             #PV update
+                             self.setParam(request['reason'],request['value'])
+                             self.updatePVs()
 
-                          #========REQUEST FOR RECOVERING SELECTION PV VALUES AND INITIALIZE THEM========
+                         #========Request for recovering selection pv values and initialize them========
 
                          elif request['request_type'] == 'UPDATE_SELECTION_PVS':
 
@@ -296,15 +243,41 @@ class PoemonitorDriver(Driver):
 
                 except requests.exceptions.ConnectionError:
                     self.connectionStatusList[queueId] = False
-                    #Remove all requests inserted while switch has been disconnected
-                    self.listOfQueues[queueId].queue.clear()
-                    #Insert request for recovering last selection PVs values
-                    self.listOfQueues[queueId].put({'request_type':'UPDATE_SELECTION_PVS'})
+
+                    #Set indicative alarms for signalizing disconnected PVs
+                    #PS: It's necessary to set PV status here in cases of hapenning a disconnection after having already considered
+                    #the connection status as 'connected'
+                    for device in self.configReader.getDevicesFrom(queueId,self.configData):
+                        self.setParamStatus(device['name']+':PwrState-Sts', Alarm.SCAN_ALARM, Severity.INVALID_ALARM)
+                        self.setParamStatus(device['name']+':PwrState-Raw', Alarm.SCAN_ALARM, Severity.INVALID_ALARM)
+                        self.setParamStatus(device['name']+':PwrState-Sel', Alarm.STATE_ALARM, Severity.INVALID_ALARM)
+                        self.updatePVs()
+
                     print('Connection Lost...')
+
+            #==============================================================#
+            #==      Request processing when disconnected to switch      ==#
+            #==============================================================#
+
+            else:
+                request = self.listOfQueues[queueId].get(block=True)
+
+                #Set indicative alarms for signalizing disconnected PVs depending on the request type
+                if request['request_type'] == 'UPDATE_SELECTION_PVS':
+                    deviceNames = self.configReader.getAllDeviceNamesFrom(self.configData)
+                    for deviceName in deviceNames:
+                        self.setParamStatus(deviceName+':PwrState-Sel', Alarm.STATE_ALARM, Severity.INVALID_ALARM)
+                        self.updatePVs()
+                else:
+                    for device in self.configReader.getDevicesFrom(queueId,self.configData):
+                        self.setParamStatus(device['name']+':PwrState-Sts', Alarm.SCAN_ALARM, Severity.INVALID_ALARM)
+                        self.setParamStatus(device['name']+':PwrState-Raw', Alarm.SCAN_ALARM, Severity.INVALID_ALARM)
+                        self.setParamStatus(device['name']+':PwrState-Sel', Alarm.STATE_ALARM, Severity.INVALID_ALARM)
+                        self.updatePVs()
+
 
     def write(self,reason,value):
 
-        print(reason)
         #Get queue ID
         deviceName = reason.split(':')
         queueId = self.configReader.getQueueIdByDeviceNameFrom(deviceName[0],self.configData)
@@ -318,7 +291,7 @@ class PoemonitorDriver(Driver):
             request = {'request_type':'CHANGE_POE_PORT_STATUS','reason':reason,'port':devicePort,'value':value}
 
             #Check if PV has write permission
-            if reason == 'T1:PwrState-Sel' or reason == 'T2:PwrState-Sel':
+            if deviceName[1] == 'PwrState-Sel':
 
                 #Only insert request for valid PV names
                 self.listOfQueues[queueId].put(request)
@@ -332,6 +305,28 @@ class PoemonitorDriver(Driver):
 
 #Main routine
 if __name__ == '__main__':
+
+    #======PVs initialization======
+
+    configReader = PoemonitorConfigReader()
+    configData = configReader.readFile(CONFIG_FILE_NAME)
+
+    prefix = 'Teste:'
+    pvdb = {}
+
+    #Recover all PV names from configuration file
+    deviceNames = configReader.getAllDeviceNamesFrom(configData)
+
+    #This configuration reader is not usefull anymore
+    del configReader
+
+    #Define all the PVs that is going to be served by the IOC
+    for deviceName in deviceNames:
+        pvdb[deviceName + ':PwrState-Sts'] = {'type'  :   'enum','enums' :   ['Off','On']}
+        pvdb[deviceName + ':PwrState-Raw'] = {'type'  :   'string'}
+        pvdb[deviceName + ':PwrState-Sel'] = {'type'  :   'enum','enums' :   ['Off','On']}
+
+    #======IOC initialization======
 
     #Create PVs and start monitor threads
     server = SimpleServer()
