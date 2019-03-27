@@ -88,23 +88,31 @@ indicar versão do python usada
 
 CRIAR DINAMICAMENTE AS PVS BASEADAS NO ARQUIVO .CONF e incluir os nomes das variaveis passiveis de serem escritas na função write de maneira dinamica
 
+Coisa para concertar
+    ->Setar as varias -SEL apenas no boot do IOC, não fazer mais isso quando recupera CONEXÃO -> ok
+    -> parar de fazer reenvio e considerar que quando der 1 timeout, perdeu a conexão -> ok
+        ->Sempre que ocorre um timeout é necessário que seja definido os alarmes para as respectivas PVs, já que essa requisição já foi removida
+            da fila e não entrara na seção referente ao processamento de requisição desconectada -> ok
+            -> isso pois a desconexão pode ocorrer durante um momento que esteja dentro do if(connected == true)
+    -> caput -> deve setar o parametro antes mesmo de saber se a request deu certo ou não, em caso de dar errado, sinalizar a PV com alerts -> ok
+    -> parar de travar a scan thread qnd perder conexão, deixar ela rodando enquanto as requisições são consumidas e são tratadas de maneira diferente
+        por estar DESCONECTADO -> ok
+
+######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????####################
+    ->RESOLVIDO -> ERA CAUSADO PELA CHAMADA SimpleServer() DEVIDO A VARIAVEL DE AMBIENTE DO EPICS QUE DEFINE UM TAMANHO BASICO PARA RECEBIMENTO
+        DE PVS DO TIPO VETOR
+
+
 #####PAREI AQUI #######
 
-Coisa para concertar
-    ->Setar as varias -SEL apenas no boot do IOC, não fazer mais isso quando recupera CONEXÃO
-    -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
-        ->fazer teste do tempo de resposta do switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
-            pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
-            será um servidor poderoso não é para haver muitos problemas
-    -> parar de fazer reenvio e considerar que quando der 1 timeout, perdeu a conexão
-        ->Sempre que ocorre um timeout é necessário que seja definido os alarmes para as respectivas PVs, já que essa requisição já foi removida
-            da fila e não entrara na seção referente ao processamento de requisição desconectada
-            -> isso pois a desconexão pode ocorrer durante um momento que esteja dentro do if(connected == true)
-    -> caput -> deve setar o parametro antes mesmo de saber se a request deu certo ou não, em caso de dar errado, sinalizar a PV com alerts
-    -> parar de travar a scan thread qnd perder conexão, deixar ela rodando enquanto as requisições são consumidas e são tratadas de maneira diferente
-        por estar DESCONECTADO
+Tentar reduzir mais o consumo de memória RAM -> no momento de import aparentemente está acontecendo um alto consumo de RAM q dps fica contante
 
 Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
+
+-> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
+    ->fazer teste do tempo de resposta do switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
+        pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
+        será um servidor poderoso não é para haver muitos problemas
 
 ANALISAR A LEITURA INICIAL DAS PVs -SEL
 
@@ -112,28 +120,25 @@ setar um timer qnd logar para garantir que o switch vai estar ligado, pq ele con
 os valores salvos???? <- acredito acontecer "raramente" isso
 
 tratar overflow no número de sessões se necessário -> testar isso <- COM O MECANISMO DE RESET GERAL ACHO QUE NÃO PRECISARÁ <- Não encontrei um COMANDO
-que faça isso, contudio reduzi para 2 minutos o tempo de logout de sessão ociosa
+que faça isso, contudo reduzi para 2 minutos o tempo de logout de sessão ociosa
 
+
+fazer teste enm uma situação real no Sirius
+    -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
+    -> verificar qual dispositivo é o do switch 10.128.101.11
+    ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
 adicionar PVs no archivers
 
 apos adicionar as PVs no archiver , testar a obtenlção do ultimo estado das PVS -SEL
 
-inserir no inicio do código breve descrição de seu propósito
-    -> inserir link para documento de especificação do padrão de armazenamento de confiogurações do arquivo .config
-
-fazer teste enm uma situação real com mais de 1 switch
-
-######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????####################
-    ->Aparentemente as requisições REST não consomem praticamente nada da RAM
-
-tela do css -> baixar ultima versão de produção do ESS
-
-EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT
-
-DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT
+DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do código esse link
 
 REALIZAR CONEXÃO PERSISTENTE??
 
-COLOCAR AS CLASSES EM UM ARQUIVO SEPARADO OU NO MESMO ARQUIVO MESMO?
+DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
-DELETAR TODAS CÓDIGOS DE DEBUGS -> control f DEBUG
+inserir no inicio do código breve descrição de seu propósito
+    -> inserir link para documento de especificação do padrão de armazenamento de confiogurações do arquivo .config
+EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
+
+tela do css -> baixar ultima versão de produção do ESS
