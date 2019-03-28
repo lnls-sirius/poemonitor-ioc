@@ -101,11 +101,19 @@ Coisa para concertar
 ######PROBLEMA, PQ ESTÁ GASTANDO TANTA MEMÓRIA ESSE PROGRAMA????####################
     ->RESOLVIDO -> ERA CAUSADO PELA CHAMADA SimpleServer() DEVIDO A VARIAVEL DE AMBIENTE DO EPICS QUE DEFINE UM TAMANHO BASICO PARA RECEBIMENTO
         DE PVS DO TIPO VETOR
+Tentar reduzir mais o consumo de memória RAM -> no momento de import aparentemente está acontecendo um alto consumo de RAM q dps fica constante
 
+tratar overflow no número de sessões se necessário -> testar isso <- COM O MECANISMO DE RESET GERAL ACHO QUE NÃO PRECISARÁ <- Não encontrei um COMANDO
+que faça isso, contudo reduzi para 2 minutos o tempo de logout de sessão ociosa
+
+setar um timer qnd logar para garantir que o switch vai estar ligado, pq ele consegue conectar antes de disponibilizar energia, podendo prejudicas
+os valores salvos???? <- acredito acontecer "raramente" isso
+
+ANALISAR A LEITURA INICIAL DAS PVs -SEL
+
+DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do código esse link
 
 #####PAREI AQUI #######
-
-Tentar reduzir mais o consumo de memória RAM -> no momento de import aparentemente está acontecendo um alto consumo de RAM q dps fica contante
 
 Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
 
@@ -113,15 +121,6 @@ Analisar se é  um problema quando está offline do switch logo no boot a variav
     ->fazer teste do tempo de resposta do switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
         pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
         será um servidor poderoso não é para haver muitos problemas
-
-ANALISAR A LEITURA INICIAL DAS PVs -SEL
-
-setar um timer qnd logar para garantir que o switch vai estar ligado, pq ele consegue conectar antes de disponibilizar energia, podendo prejudicas
-os valores salvos???? <- acredito acontecer "raramente" isso
-
-tratar overflow no número de sessões se necessário -> testar isso <- COM O MECANISMO DE RESET GERAL ACHO QUE NÃO PRECISARÁ <- Não encontrei um COMANDO
-que faça isso, contudo reduzi para 2 minutos o tempo de logout de sessão ociosa
-
 
 fazer teste enm uma situação real no Sirius
     -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
@@ -131,14 +130,14 @@ adicionar PVs no archivers
 
 apos adicionar as PVs no archiver , testar a obtenlção do ultimo estado das PVS -SEL
 
-DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do código esse link
-
-REALIZAR CONEXÃO PERSISTENTE??
-
 DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
+Adicionar mais informações no read me do github
+
 inserir no inicio do código breve descrição de seu propósito
-    -> inserir link para documento de especificação do padrão de armazenamento de confiogurações do arquivo .config
+    -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
 EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
 
 tela do css -> baixar ultima versão de produção do ESS
+
+NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
