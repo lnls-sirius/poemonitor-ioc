@@ -23,7 +23,7 @@
 # <LINK DA ESPECIFICAÇÃO DO ARQUIVO DE CONFIGURAÇÃO>
 #You can also check the IOC structure explanation diagram on the link below for a high level view of how
 #does this IOC worksself.
-# <LINK DO DIAGRAMA DE ESTRUTURA DO CÓDIGO>
+# https://github.com/lnls-sirius/poemonitor-ioc/tree/master/IOC%20Diagrams
 #It's is recommended to set the idle login timeout value in the switches that is going to be monitored
 #by this IOC to the lowest value possible (Tested with 2 minutes timeout)
 
