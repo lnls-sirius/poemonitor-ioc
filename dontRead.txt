@@ -115,6 +115,16 @@ DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do c
 
 #####PAREI AQUI #######
 
+COnfigurar o servidor VNC no meu pc
+
+SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
+    ->TESTAR USO DA API REST SEM LOGIN SENDO QUE HÁ UM USUÁRIO CRIADO NO SWITCH
+    -> Não será necessário mais fazer login, portanto remover todas as partes referentes a isso. O funcionamento do IOC então ser dará
+    simplesmente tentado fazer a requisião e se der timeout sinalizando com os ALERTAS que deu errados, ou se der certo, sinaliza o status
+    ->Averiguar sobre a inicialização das variaveis SEL no boot do IOC -> Deixar todas zeradas sempres? COncluir o estado baseado nas Pvs
+        de status??? Não vamos perder o histórico de escritas que desejavamos?
+    -> Realizar todos os testes novamente depois da nova alteração
+
 Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
 
 -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
@@ -138,6 +148,9 @@ inserir no inicio do código breve descrição de seu propósito
     -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
 EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
 
-tela do css -> baixar ultima versão de produção do ESS
+tela do pydm
+    ->finalizar correção da configuração
+    ->analisar com o usuário como deve ser a tela (pessoal do DIG, du???)
+    ->desenvolver tela
 
 NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
