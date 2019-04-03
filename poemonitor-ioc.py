@@ -27,7 +27,7 @@
 #It's is recommended to set the idle login timeout value in the switches that is going to be monitored
 #by this IOC to the lowest value possible (Tested with 2 minutes timeout)
 
-#Tested with python 3.6.5 and pcaspy 0.7.2
+#Tested with python 3.6.5, pcaspy 0.7.2, pyepics 3.3.3 and requests 2.18.4
 
 #Necessary modules
 
