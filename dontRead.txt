@@ -113,19 +113,24 @@ ANALISAR A LEITURA INICIAL DAS PVs -SEL
 
 DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do código esse link
 
-#####PAREI AQUI #######
-
-COnfigurar o servidor VNC no meu pc
+Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
 
 SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
-    ->TESTAR USO DA API REST SEM LOGIN SENDO QUE HÁ UM USUÁRIO CRIADO NO SWITCH
+    -> PASSAR A LIMPO  E ORNGANIZAR AS INFORMAÇÕES NO CADERNO
+    ->TESTAR USO DA API REST SEM LOGIN SENDO QUE HÁ UM USUÁRIO CRIADO NO SWITCH -> COnclusão: é necessário o login
+
+    #####PAREI AQUI #######
     -> Não será necessário mais fazer login, portanto remover todas as partes referentes a isso. O funcionamento do IOC então ser dará
     simplesmente tentado fazer a requisião e se der timeout sinalizando com os ALERTAS que deu errados, ou se der certo, sinaliza o status
     ->Averiguar sobre a inicialização das variaveis SEL no boot do IOC -> Deixar todas zeradas sempres? COncluir o estado baseado nas Pvs
-        de status??? Não vamos perder o histórico de escritas que desejavamos?
+        de status??? Não vamos perder o histórico de escritas que desejavamos? -> CONCLUIMOS QUE SERÁ REALIZADA A DEDUÇÃO
+    -> ATUALIZAR OS DIAGRAMAS (CRIAR NOVOS JA QUE VAI MANTER OS CÓDIGOS DIFERENTES NO GIT)
+    -> DOCUMENTAR O SIGNIFCADO DOS ALARMES EM CADA CASO
     -> Realizar todos os testes novamente depois da nova alteração
 
-Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
+Documentar a versão dos outros módulos também (requests e etc)
+
+COnfigurar o servidor VNC no meu pc
 
 -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
     ->fazer teste do tempo de resposta do switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
@@ -136,6 +141,7 @@ fazer teste enm uma situação real no Sirius
     -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
     -> verificar qual dispositivo é o do switch 10.128.101.11
     ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
+
 adicionar PVs no archivers
 
 apos adicionar as PVs no archiver , testar a obtenlção do ultimo estado das PVS -SEL
