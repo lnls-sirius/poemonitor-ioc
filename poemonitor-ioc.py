@@ -185,7 +185,6 @@ class PoemonitorDriver(Driver):
                                  try:
                                      #Request POE port status using switch's REST API
                                      r = requests.request(method='get',url=apiUrl + 'ports/'+device['port']+'/poe/stats',cookies=cookie,timeout=REQ_TIMEOUT)
-                                     r = dict(r.json())
                                  except requests.exceptions.ReadTimeout:
 
                                      #Set indicative alarms for signalizing problem on PVs value due to disconnnection
@@ -197,18 +196,22 @@ class PoemonitorDriver(Driver):
                                      #so it's considered any timeout in a request as connection loss
                                      raise requests.exceptions.ConnectionError
 
-                                 #DEBUG
-                                 #print('updated PVs     queueID = ' + str(queueId))
-                                 print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+                                 #Discard bad requests responses(It happens sometimes during switch boot as some services starts before others)
+                                 if(r.status_code == requests.codes.ok):
+                                     r = dict(r.json())
 
-                                 #Update PVs values
-                                 self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
+                                     #DEBUG
+                                     #print('updated PVs     queueID = ' + str(queueId))
+                                     print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 
-                                 if r['poe_detection_status'] == 'PPDS_DELIVERING' :
-                                     self.setParam(device['name']+':PwrState-Sts',1)
-                                 else:
-                                     self.setParam(device['name']+':PwrState-Sts',0)
-                                 self.updatePVs()
+                                     #Update PVs values
+                                     self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
+
+                                     if r['poe_detection_status'] == 'PPDS_DELIVERING' :
+                                         self.setParam(device['name']+':PwrState-Sts',1)
+                                     else:
+                                         self.setParam(device['name']+':PwrState-Sts',0)
+                                     self.updatePVs()
 
                          #========Request for enabling/disabling PoE on switch ports========
 
@@ -233,9 +236,12 @@ class PoemonitorDriver(Driver):
                                    #so it's considered any timeout in a request as connection loss
                                    raise requests.exceptions.ConnectionError
 
-                             #PV update
-                             self.setParam(request['reason'],request['value'])
-                             self.updatePVs()
+                             #Discard bad requests responses(It happens sometimes during switch boot as some services starts before others)
+                             if(r.status_code == requests.codes.ok):
+
+                                 #PV update
+                                 self.setParam(request['reason'],request['value'])
+                                 self.updatePVs()
 
                          #========Request for recovering selection pv values and initialize them========
 
