@@ -115,6 +115,8 @@ DESENHAR O DIAGRAMA DA ARQUITETURA E SUBIR NO GIT -> inserir na descrição do c
 
 Analisar se é  um problema quando está offline do switch logo no boot a variavel -Raw vir sem valor nenhum apenas com os alarms
 
+Documentar a versão dos outros módulo (requests e etc)
+
 SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
     -> PASSAR A LIMPO  E ORNGANIZAR AS INFORMAÇÕES NO CADERNO
     ->TESTAR USO DA API REST SEM LOGIN SENDO QUE HÁ UM USUÁRIO CRIADO NO SWITCH -> COnclusão: é necessário o login
@@ -126,17 +128,17 @@ SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
         de status??? Não vamos perder o histórico de escritas que desejavamos? -> CONCLUIMOS QUE SERÁ REALIZADA A DEDUÇÃO
     -> ATUALIZAR OS DIAGRAMAS (CRIAR NOVOS JA QUE VAI MANTER OS CÓDIGOS DIFERENTES NO GIT)
     -> DOCUMENTAR O SIGNIFCADO DOS ALARMES EM CADA CASO
+	->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
     -> Realizar todos os testes novamente depois da nova alteração
-
-Documentar a versão dos outros módulos também (requests e etc)
 
 COnfigurar o servidor VNC no meu pc
 
 -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
-    ->fazer teste do tempo de resposta do switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
+    ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
         pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
         será um servidor poderoso não é para haver muitos problemas
-
+    -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional 
+	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ???
 fazer teste enm uma situação real no Sirius
     -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
     -> verificar qual dispositivo é o do switch 10.128.101.11
