@@ -128,11 +128,8 @@ SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
     -> ATUALIZAR OS DIAGRAMAS
     -> DOCUMENTAR O SIGNIFCADO DOS ALARMES EM CADA CASO
 
-    #####PAREI AQUI #######
-
-atualizar os links nas descrições referentes as documentações de cada um dos arquivos
-
 COnfigurar o servidor VNC no meu pc
+    #####PAREI AQUI #######
 
 -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
     ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
@@ -150,6 +147,8 @@ adicionar PVs no archivers
 DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
 Adicionar mais informações no read me do github
+    ->uam coisa a falar é explicar a diferença dos arquivos contidos em cada pasta
+    ->Indicar que para mais informações sobre os status da PV raw e seus significados, acessar a documentação do switch
 
 inserir no inicio do código breve descrição de seu propósito
     -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
@@ -160,6 +159,13 @@ tela do pydm
     ->analisar com o usuário como deve ser a tela (pessoal do DIG, du???)
     ->desenvolver tela
 
+Criar a imagem docker -> usar o repositório hub.docker.com/_/python
+    -> usar imagem 3.6.5 strech (para Debian mais recente)
+        ->será necessário instalar pcaspy,requests, pip
+    -> IOC deve se encontrar fora do ambiente criado do Docker, para sempre que for alterado o código não seja necessário reomontar a imagem
+        e sim apenas reiniciala
+
 ->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
 
+-> anotar considerações futuras par ao projeto
 NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
