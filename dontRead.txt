@@ -120,16 +120,17 @@ Documentar a versão dos outros módulo (requests e etc)
 SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
     -> PASSAR A LIMPO  E ORNGANIZAR AS INFORMAÇÕES NO CADERNO
     ->TESTAR USO DA API REST SEM LOGIN SENDO QUE HÁ UM USUÁRIO CRIADO NO SWITCH -> COnclusão: é necessário o login
-
-    #####PAREI AQUI #######
     -> Não será necessário mais fazer login, portanto remover todas as partes referentes a isso. O funcionamento do IOC então ser dará
     simplesmente tentado fazer a requisião e se der timeout sinalizando com os ALERTAS que deu errados, ou se der certo, sinaliza o status
     ->Averiguar sobre a inicialização das variaveis SEL no boot do IOC -> Deixar todas zeradas sempres? COncluir o estado baseado nas Pvs
         de status??? Não vamos perder o histórico de escritas que desejavamos? -> CONCLUIMOS QUE SERÁ REALIZADA A DEDUÇÃO
-    -> ATUALIZAR OS DIAGRAMAS (CRIAR NOVOS JA QUE VAI MANTER OS CÓDIGOS DIFERENTES NO GIT)
-    -> DOCUMENTAR O SIGNIFCADO DOS ALARMES EM CADA CASO
-	->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
     -> Realizar todos os testes novamente depois da nova alteração
+    -> ATUALIZAR OS DIAGRAMAS
+    -> DOCUMENTAR O SIGNIFCADO DOS ALARMES EM CADA CASO
+
+    #####PAREI AQUI #######
+
+atualizar os links nas descrições referentes as documentações de cada um dos arquivos
 
 COnfigurar o servidor VNC no meu pc
 
@@ -137,7 +138,7 @@ COnfigurar o servidor VNC no meu pc
     ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
         pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
         será um servidor poderoso não é para haver muitos problemas
-    -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional 
+    -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional
 	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ???
 fazer teste enm uma situação real no Sirius
     -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
@@ -145,8 +146,6 @@ fazer teste enm uma situação real no Sirius
     ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
 
 adicionar PVs no archivers
-
-apos adicionar as PVs no archiver , testar a obtenlção do ultimo estado das PVS -SEL
 
 DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
@@ -160,5 +159,7 @@ tela do pydm
     ->finalizar correção da configuração
     ->analisar com o usuário como deve ser a tela (pessoal do DIG, du???)
     ->desenvolver tela
+
+->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
 
 NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
