@@ -231,6 +231,7 @@ class PoemonitorDriver(Driver):
                                          self.setParam(device['name'] + ':PwrState-Sel',1)
                                      else:
                                          self.setParam(device['name'] + ':PwrState-Sel',0)
+                                         
                          except (requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
 
                               #As the Sirius network is powerful and has a big bandwidth, we should not have problems related to timeouts,
