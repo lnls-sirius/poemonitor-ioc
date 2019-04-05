@@ -136,7 +136,7 @@ COnfigurar o servidor VNC no meu pc
         pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
         será um servidor poderoso não é para haver muitos problemas
     -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional
-	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ???
+	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ??? -> SÓ INSERIR UMA REQUEST SCAN NA FILA SE ELA NÃO EXISTIR LÁ
 fazer teste enm uma situação real no Sirius
     -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
     -> verificar qual dispositivo é o do switch 10.128.101.11
@@ -153,6 +153,7 @@ Adicionar mais informações no read me do github
 inserir no inicio do código breve descrição de seu propósito
     -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
 EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
+    -> comentar também sobre os outros diagramas no cabeçalho do código
 
 tela do pydm
     ->finalizar correção da configuração
