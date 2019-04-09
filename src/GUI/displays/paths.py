@@ -14,7 +14,7 @@ def get_abs_path(relative):
 #                 Display + UI                #
 #=============================================#
 
-MAIN_MENU_UI = "../../ui/mainMenu.ui"
+MAIN_MENU_UI = "../ui/mainMenu.ui"
 
-STATUS_MONITOR_PY = "statusMonitorDisplay.py"
-STATUS_MONITOR_UI = "../../ui/statusMonitor.ui"
+STATUS_MONITOR_DISPLAY = "statusMonitorDisplay.py"
+STATUS_MONITOR_UI = "../ui/statusMonitor.ui"
