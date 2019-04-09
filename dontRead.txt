@@ -131,6 +131,22 @@ SUBIR COMO UM CÓDIGO DIFERENTE DO CONTROLADOR POE
 COnfigurar o servidor VNC no meu pc
     #####PAREI AQUI #######
 
+    -> Criação de um arquivo??? SCRIPT de tradução de IPs para nome de sala para melhor amostragem de dados pela GUI
+        https://github.com/lnls-sirius/bbb-daemon/blob/rest-api/common/entity/entities.py -> talvez tenha parte do padrão aqui
+
+    ->DELETAR QUANDO NECESSÁRIO O CONFIGFILE DEPRECATED
+
+    ->tela do pydm
+        ->montagem da tela DINAMICAMENTE
+        ->FAZER O ON/OFF BUTTON, OUUUUUUUU CHECKBOX 
+        -> QUando no menu clica em um botão, envia o ip da sala para a outra tela via sinal e baseado nesse IP, pega om arquivo de config
+            e cria os elementos de vizualização ou analisar o uso do widget templeateRepeater já que parece que posso enviar dinamicamente,
+            uma lista de objetos e seus respectivos macros, fazendo com que eu possa controlar tudo pelo menu apenas
+        -> Seleciona a sala e o switch? ou só a sala e ja mostra separadamente todos os switchs da sala (Parece mais simples, rápido e menos passo a passo
+            pro operador) -> aqui entra a parte da tradução de ip para nome de sala e também para número do switch
+
+
+
 -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
     ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
         pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
@@ -149,16 +165,14 @@ DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 Adicionar mais informações no read me do github
     ->uam coisa a falar é explicar a diferença dos arquivos contidos em cada pasta
     ->Indicar que para mais informações sobre os status da PV raw e seus significados, acessar a documentação do switch
+    ->Explicar que existem arquivos duplicados dentro das pastas exatamente paraas coisas funcionarem standlone (explicar que existe essa necessidade)
+        pois o IOC funciona sem a interface gráfica de controle
+    ->documentar a necessidade de haver um cópida do arquivo de configuração dentro da pasta dos displays da GUI (devido eles funcionarem standalone)
 
 inserir no inicio do código breve descrição de seu propósito
     -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
 EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
     -> comentar também sobre os outros diagramas no cabeçalho do código
-
-tela do pydm
-    ->finalizar correção da configuração
-    ->analisar com o usuário como deve ser a tela (pessoal do DIG, du???)
-    ->desenvolver tela
 
 Criar a imagem docker -> usar o repositório hub.docker.com/_/python
     -> usar imagem 3.6.5 strech (para Debian mais recente)
