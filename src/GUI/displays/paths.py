@@ -10,6 +10,10 @@ def get_abs_path(relative):
     """
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), relative)
 
+
+SWITCHES_CONFIG = "switches.config"
+ROOMS_CONFIG = "rooms.config"
+
 #=============================================#
 #                 Display + UI                #
 #=============================================#
