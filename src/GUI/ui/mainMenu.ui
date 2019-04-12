@@ -23,22 +23,6 @@
    <enum>Qt::LeftToRight</enum>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0">
-    <widget class="PyDMRelatedDisplayButton" name="rdb_SalaConectividade">
-     <property name="toolTip">
-      <string/>
-     </property>
-     <property name="text">
-      <string>Sala de Conectividade</string>
-     </property>
-     <property name="filenames" stdset="0">
-      <stringlist/>
-     </property>
-     <property name="openInNewWindow" stdset="0">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="title">
      <property name="text">
@@ -49,13 +33,61 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="0">
+    <widget class="PyDMShellCommand" name="scbt_salaConectividade">
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="text">
+      <string>Sala de Conectividade</string>
+     </property>
+     <property name="showIcon" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="command" stdset="0">
+      <string>pydm statusMonitorDisplay.py 0</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="PyDMShellCommand" name="scbt_salaRacks1">
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="text">
+      <string>Sala de Racks 1</string>
+     </property>
+     <property name="showIcon" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="command" stdset="0">
+      <string>pydm statusMonitorDisplay.py 1</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="PyDMShellCommand" name="scbt_salaRacks20">
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="text">
+      <string>Sala de Racks 20</string>
+     </property>
+     <property name="showIcon" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="command" stdset="0">
+      <string>pydm statusMonitorDisplay.py 20</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PyDMRelatedDisplayButton</class>
+   <class>PyDMShellCommand</class>
    <extends>QPushButton</extends>
-   <header>pydm.widgets.related_display_button</header>
+   <header>pydm.widgets.shell_command</header>
   </customwidget>
  </customwidgets>
  <resources/>

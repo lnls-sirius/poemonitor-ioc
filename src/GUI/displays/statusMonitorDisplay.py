@@ -1,11 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from os import sys,path
+
 #Insert new path on enviroment variable for being able to import packages from upper folders
 #Inserting .../src
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from utils import poemonitorConfigfileReader
-
 import json
 from qtpy import QtCore,QtGui
 from pydm import Display
@@ -17,33 +18,35 @@ from pydm.utilities import connection
 from paths import get_abs_path,STATUS_MONITOR_UI,SWITCHES_CONFIG,ROOMS_CONFIG
 
 class MonitorDisplay(Display):
+
     def __init__(self, parent=None, args=[], macros=None):
         super(MonitorDisplay, self).__init__(parent=parent, args=args, macros=None)
 
+        #Define roomId to be monitored based on display instantiation passed value
+        self.roomId = int(sys.argv[2])
         #Read data from configuration files
-        switchesConfigReader = poemonitorConfigfileReader.PoemonitorSwitchesConfigReader()
-        roomsConfigReader = poemonitorConfigfileReader.PoemonitorRoomsConfigReader()
+        self.switchesConfigReader = poemonitorConfigfileReader.PoemonitorSwitchesConfigReader()
+        self.roomsConfigReader = poemonitorConfigfileReader.PoemonitorRoomsConfigReader()
 
-        switchesFileData = switchesConfigReader.readFile(SWITCHES_CONFIG)
-        roomsFileData = roomsConfigReader.readFile(ROOMS_CONFIG)
-        print(roomsFileData)
+        self.switchesFileData = self.switchesConfigReader.readFile(SWITCHES_CONFIG)
+        self.roomsFileData = self.roomsConfigReader.readFile(ROOMS_CONFIG)
+
+        #Dinamically set window title
+        self.roomName = self.roomsConfigReader.getRoomNameByIdFrom(self.roomId,self.roomsFileData)
+        self.setWindowTitle(self.roomName + ' - Power-Over-Ethernet Monitor ')
+
         #Create dinamic monitoring screen based on number of devices on chosen room
-        for switch in roomsConfigReader.getSwitchesByRoomIdFrom(1,roomsFileData):
-            print(switch)
-            for device in switchesConfigReader.getDevicesByIpFrom(switch["ip"],switchesFileData):
+        for switch in self.roomsConfigReader.getSwitchesByRoomIdFrom(self.roomId,self.roomsFileData):
+            for device in self.switchesConfigReader.getDevicesByIpFrom(switch["ip"],self.switchesFileData):
+
                 if device != None:
-                    print(device["name"])
-                    print("\n")
-                    self.table.insertRow(self.table.rowCount())
-                    self.insertDeviceMonitorLine(device["name"])
+                    self.insertDeviceMonitorRow(switch["ip"],device["name"])
 
+            #Insert blank row for differ switches informations
+            self.insertNewRow()
 
-        '''
-        #DEBUG
-        for device in switchesConfigReader.getAllDeviceNamesFrom(switchesFileData):
-            self.table.insertRow(self.table.rowCount())
-            self.insertDeviceMonitorLine(device)
-        '''
+        #Remove last inserted row
+        self.table.removeRow(self.table.rowCount()-1)
 
     def ui_filename(self):
         return STATUS_MONITOR_UI
@@ -51,21 +54,32 @@ class MonitorDisplay(Display):
     def ui_filepath(self):
         return get_abs_path(STATUS_MONITOR_UI)
 
-    #Insert PV monitor widgets on table row
-    def insertDeviceMonitorLine(self,pvName):
+    def insertNewRow(self):
+        #Insert new row
+        self.table.insertRow(self.table.rowCount())
+        #Select last inserted row
+        return self.table.rowCount() - 1
 
-        row = self.table.rowCount() - 1
+    #Insert PV monitor widgets on table row
+    def insertDeviceMonitorRow(self,switchIp,pvName):
+
+        row = self.insertNewRow()
 
         #Set each widget properties and insert on respective table row
 
+        #Swich Ip Label
+        w = QLabel()
+        w.setText(switchIp)
+        w.setAlignment(QtCore.Qt.AlignCenter)
+        self.table.setCellWidget(row,0,w)
+
         #Device name label creation
-        self.table.setColumnWidth(0,150)
+        self.table.setColumnWidth(1,150)
         w = QLabel()
         w.setText(pvName)
         w.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.table.setCellWidget(row,0,w)
-
+        self.table.setCellWidget(row,1,w)
 
         #Status byte indicator creation
         w = PyDMByteIndicator(init_channel='ca://'+pvName+'-Sts')
@@ -74,22 +88,23 @@ class MonitorDisplay(Display):
         w.onColor = QtGui.QColor(0,255,0)
         w.offColor = QtGui.QColor(255,0,0)
         w.alarmSensitiveBorder = True
-
-        self.table.setCellWidget(row,1,w)
+        w.alarmSensitiveContent = True
+        self.table.setCellWidget(row,2,w)
 
         #Raw status label creation
-        self.table.setColumnWidth(2,150)
+        self.table.setColumnWidth(3,150)
         w = PyDMLabel(init_channel='ca://'+pvName+'-Raw')
+        w.alarmSensitiveBorder = True
         w.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.table.setCellWidget(row,2,w)
+        self.table.setCellWidget(row,3,w)
 
         #Turn On push button creation
         w = PyDMPushButton(label='Turn On',init_channel='ca://'+pvName+'-Sel',pressValue=1)
         w.alarmSensitiveContent = True
-        self.table.setCellWidget(row,3,w)
+        self.table.setCellWidget(row,4,w)
 
         #Turn Off push button creation
         w = PyDMPushButton(label='Turn Off',init_channel='ca://'+pvName+'-Sel',pressValue=0)
         w.alarmSensitiveContent = True
-        self.table.setCellWidget(row,4,w)
+        self.table.setCellWidget(row,5,w)

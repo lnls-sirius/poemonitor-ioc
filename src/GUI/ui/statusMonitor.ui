@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>form</class>
+ <widget class="QWidget" name="form">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>698</width>
+    <width>750</width>
     <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>formName</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -22,11 +22,14 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
      <property name="dragEnabled">
       <bool>false</bool>
      </property>
      <property name="alternatingRowColors">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <attribute name="horizontalHeaderVisible">
       <bool>true</bool>
@@ -39,13 +42,18 @@
      </attribute>
      <column>
       <property name="text">
-       <string>Device</string>
+       <string>Switch IP</string>
       </property>
       <property name="font">
        <font>
         <weight>50</weight>
         <bold>false</bold>
        </font>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Device</string>
       </property>
      </column>
      <column>

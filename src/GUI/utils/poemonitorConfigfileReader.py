@@ -34,7 +34,7 @@ class PoemonitorSwitchesConfigReader():
         for switch in fileData["switches"]:
             if(ip == switch["login_data"]["ip"]):
                 return switch["devices"]
-            return None
+        return None
 
 #Class to read poemonitor-ioc rooms configure file
 class PoemonitorRoomsConfigReader():
@@ -47,3 +47,7 @@ class PoemonitorRoomsConfigReader():
             if room["id"] == roomId:
                 return room["switches"]
         return None
+    def getRoomNameByIdFrom(self,roomId,fileData):
+        for room in fileData["rooms"]:
+            if room["id"] == roomId:
+                return room["name"]
