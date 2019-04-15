@@ -151,22 +151,25 @@ PARA PEGAR DINAMICAMENTE OS DADOS NO ARQUIVO -> ANALISAR NÃO USAR O RELATED BUT
     ->MONTAR OS ARQUIVOS DE CONFUGRAÇÃO DENOVO , PENSANDO NA ESTRUTURA DO SIRIUS OS ATUAIS SÃO APENAS TESTE
     ->renomear arquivo de configuração dos IOCs para switch.config
 
+    fazer um laucher da GUI???
+
+    -> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
+        ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
+            pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
+            será um servidor poderoso não é para haver muitos problemas
+        -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional
+    	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ??? -> SÓ INSERIR UMA REQUEST SCAN NA FILA SE ELA NÃO EXISTIR LÁ
+    fazer teste enm uma situação real no Sirius
+        -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
+        -> verificar qual dispositivo é o do switch 10.128.101.11 -> Camera prof.Rubens Ignorar
+        ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
+
     #####PAREI AQUI #######
     ->NOME DAS PVs
+        ->Confirmar com a Patricia um nome provisório para as PVs das placas contadoras
 
+    ->Verificar nome das PVs e arrumar os arquivos de configuração em relação aos novos nomes das PVs
 
-fazer um laucher da GUI???
-
--> reduzir o tempo de timeout para um valor próximo ao q uma requisição demora
-    ->fazer teste do tempo de resposta de cada switch, qnd ele esta com conexão ssh aberta ou não,fazer teste considerando o switch que está no sirius,
-        pensar tbm sobre o estresse no dispositiovo que está rodando o IOC, de ele demorar para processar a resposta, contudo considerando que
-        será um servidor poderoso não é para haver muitos problemas
-    -> timeouts maiores influenciam diretamente no preenchimento excessivo da fila de requisições, oque fazer, velocidade do scan ser proporcional
-	ao tempo do timeout??? Limitar número maximo de requests do tipo scan ??? -> SÓ INSERIR UMA REQUEST SCAN NA FILA SE ELA NÃO EXISTIR LÁ
-fazer teste enm uma situação real no Sirius
-    -> montar o arquivo de configuração como anotado no caderno sobre os ips e portas
-    -> verificar qual dispositivo é o do switch 10.128.101.11
-    ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
 
 adicionar PVs no archivers
 
@@ -179,6 +182,7 @@ Adicionar mais informações no read me do github
         pois o IOC funciona sem a interface gráfica de controle
     ->documentar a necessidade de haver um cópida do arquivo de configuração dentro da pasta dos displays da GUI (devido eles funcionarem standalone)
     ->explicação da dinamicidade das telas baseado nos 2 arquivos de confugração
+    ->Explicação do passo a passo para inserir ou deletar uma nova sala ou switch nos arquivos de configuração
 
 inserir no inicio do código breve descrição de seu propósito
     -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
@@ -203,5 +207,6 @@ NOME DO ARQUIVO DE CONFIGURAÇÃO MODIFICADO EM TODOS OS LUGARES, ALTERAR ISSO E
 
 -> anotar considerações futuras par ao projeto
 NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
+realizar o teste de timeout para a estrutura usando autenticação nos switches
 
 RENOVAR O LINK DOS DIAGRAMAS NO CABEÇALHO DO CÓDIGO, LINKS SOBRESSALENTE DEVIDO A MUDANÇA DO FORMATO DE DIRETÓRIO USADO
