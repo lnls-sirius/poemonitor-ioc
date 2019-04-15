@@ -148,10 +148,11 @@ PARA PEGAR DINAMICAMENTE OS DADOS NO ARQUIVO -> ANALISAR NÃO USAR O RELATED BUT
             pro operador) -> aqui entra a parte da tradução de ip para nome de sala e também para número do switch
                 ->PROTÓTIPO NO CADERNO MOSTRA A IDEIA
 
-
+    ->MONTAR OS ARQUIVOS DE CONFUGRAÇÃO DENOVO , PENSANDO NA ESTRUTURA DO SIRIUS OS ATUAIS SÃO APENAS TESTE
+    ->renomear arquivo de configuração dos IOCs para switch.config
 
     #####PAREI AQUI #######
-    ->MONTAR OS ARQUIVOS DE CONFUGRAÇÃO DENOVO , PENSANDO NA ESTRUTURA DO SIRIUS OS ATUAIS SÃO APENAS TESTES
+    ->NOME DAS PVs
 
 
 fazer um laucher da GUI???
