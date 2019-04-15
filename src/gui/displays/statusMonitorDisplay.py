@@ -82,7 +82,7 @@ class MonitorDisplay(Display):
         self.table.setCellWidget(row,1,w)
 
         #Status byte indicator creation
-        w = PyDMByteIndicator(init_channel='ca://'+pvName+'-Sts')
+        w = PyDMByteIndicator(init_channel='ca://'+pvName+':PwrState-Sts')
         w.circles = True
         w.showLabels = False
         w.onColor = QtGui.QColor(0,255,0)
@@ -93,18 +93,18 @@ class MonitorDisplay(Display):
 
         #Raw status label creation
         self.table.setColumnWidth(3,150)
-        w = PyDMLabel(init_channel='ca://'+pvName+'-Raw')
+        w = PyDMLabel(init_channel='ca://'+pvName+':PwrState-Raw')
         w.alarmSensitiveBorder = True
         w.setAlignment(QtCore.Qt.AlignCenter)
 
         self.table.setCellWidget(row,3,w)
 
         #Turn On push button creation
-        w = PyDMPushButton(label='Turn On',init_channel='ca://'+pvName+'-Sel',pressValue=1)
+        w = PyDMPushButton(label='Turn On',init_channel='ca://'+pvName+':PwrState-Sel',pressValue=1)
         w.alarmSensitiveContent = True
         self.table.setCellWidget(row,4,w)
 
         #Turn Off push button creation
-        w = PyDMPushButton(label='Turn Off',init_channel='ca://'+pvName+'-Sel',pressValue=0)
+        w = PyDMPushButton(label='Turn Off',init_channel='ca://'+pvName+':PwrState-Sel',pressValue=0)
         w.alarmSensitiveContent = True
         self.table.setCellWidget(row,5,w)
