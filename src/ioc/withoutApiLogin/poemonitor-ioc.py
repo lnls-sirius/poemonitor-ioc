@@ -38,13 +38,14 @@ from queue import Queue
 CONFIG_FILE_NAME = 'switches.config'
 
 #Delay, in seconds, to insert a new read request into a queue
-SCAN_DELAY = 1
+SCAN_DELAY = 0.5
 
 #Maximum number of request retries for considering connection lost
 MAX_RETRIES = 1
 
 #Requests timeout
-REQ_TIMEOUT = 0.6
+#Value set based on tests performed on Sirius enviroment and considering a perspective without authentication
+REQ_TIMEOUT = 0.3
 
 #Class responsible for reading poemonitor-ioc configuration file
 class PoemonitorConfigReader():
@@ -287,7 +288,7 @@ if __name__ == '__main__':
     configReader = PoemonitorConfigReader()
     configData = configReader.readFile(CONFIG_FILE_NAME)
 
-    prefix = 'Teste:'
+    prefix = ''
     pvdb = {}
     #Recover all PV names from configuration file
     deviceNames = configReader.getAllDeviceNamesFrom(configData)
