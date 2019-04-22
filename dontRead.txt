@@ -179,7 +179,8 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
         EPICS_BASE... = . pip install pcaspy
         2ª variaveis = linux-x86_64 pip install pcaspy
     ->A base epics instalada deve ser a ,6 no final e n a .5 como mostrado da wikiSirius -> OK
-    #####PAREI AQUI #######
+
+    CORRIGIR TODOS OS LUGARES QUE ESTÁ ESCRITO ENVIROMENT PARA environment (TEM UM N ANTES DO M)
 
     Fazer o compose file -> TEORICAMENTE FINALIZADO, VER COMO TESTAR , QUAL COMANDO RODAR??? CONFERIR SE ESTÁ TUDO CERTO
     -> IOC deve se encontrar fora do ambiente criado do Docker, para sempre que for alterado o código não seja necessário remontar a imagem
@@ -187,9 +188,24 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
         ->Pasta externa ao container é mapeado dentro dele para que seja acessivel um arquivo de fora pelo container, logo permite que ele execute
         o IOC presente em uma pasta externa, deixando o container mais modular
 
-adicionar PVs no archivers
+    IOC só está funcionando quando é buildado e iniciado direto pelo docker compose
+        ->ISSO FAZ SENTIDO POIS É NO DOCKER COMPOSE QUE SE INICIA O VOLUME
 
-CORRIGIR TODOS OS LUGARES QUE ESTÁ ESCRITO ENVIROMENT PARA environment (TEM UM N ANTES DO M)
+    #####PAREI AQUI #######
+
+	adaptar código do compose file para código funcional no swarm -> cRIAR UM NOVO ARQUIVO, DEIXAR TANTO O COMPOSO QUANTO O SWARM NO REPOSITÓRIO
+
+    depois do teste voltar configurações ao normal -> config file do ioc para switches e o caminho do compose file tbm
+    volume -> "/storage/misc/repository/poemonitor-ioc/src/ioc:/usr/local/poemonitor-ioc/"
+
+subir imagem docker criada para o projeto no docker hub
+
+rodar o swarm no servidor e validar seu funcionamento (IOC ok?? Alterações plug and play tbm???)
+
+fazer documento explicando como está no caderno sobre como funciona o container docker criado
+e quais são as minimas alterações necessárias de serem realizadas para aplicar qualquer update de versão do ioc
+
+adicionar PVs no archivers
 
 DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
