@@ -1,18 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-#Source links used for developing this IOC
-
-#source_1 = http://docs.python-requests.org/en/master/api/#requests.Response
-#source_2 = https://support.hpe.com/hpsc/doc/public/display?sp4ts.oid=7074783&docLocale=en_US&docId=emr_na-c05373669
-#source_3 = https://www.w3schools.com/python/python_json.asp
-#source_4 = https://docs.python.org/3/library/json.html#module-json
-#source_5 = https://docs.python.org/3/library/queue.html
-#source_6 = https://docs.python.org/3.4/library/threading.html
-#source_7 = https://www.tutorialspoint.com/python/python_files_io.htm
-#source_8 - https://www.youtube.com/watch?v=pmIm7GeOZds
-
 #Developer: Paulo Baraldi Mausbach
+#LNLS - Brazilian Synchrotron Light Source Laboratory
 
 #poemonitor-ioc.py
 

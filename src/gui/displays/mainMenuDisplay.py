@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#Developer: Paulo Baraldi Mausbach
+#LNLS - Brazilian Synchrotron Light Source Laboratory
+
 import json
 from qtpy import QtCore
 from pydm import Display

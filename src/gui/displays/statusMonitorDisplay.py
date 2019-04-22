@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#Developer: Paulo Baraldi Mausbach
+#LNLS - Brazilian Synchrotron Light Source Laboratory
+
 from os import sys,path
 
 #Insert new path on enviroment variable for being able to import packages from upper folders
