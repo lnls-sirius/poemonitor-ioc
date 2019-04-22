@@ -164,14 +164,32 @@ PARA PEGAR DINAMICAMENTE OS DADOS NO ARQUIVO -> ANALISAR NÃO USAR O RELATED BUT
         -> verificar qual dispositivo é o do switch 10.128.101.11 -> Camera prof.Rubens Ignorar
         ->pegar os nomes dos dispositivos? (Não necessário para o primeiro teste mas seria interessante já ir atrás disso)
 
-    #####PAREI AQUI #######
+    Atualizar documentação dos padrões de arquivos de configuração no git
+
     ->NOME DAS PVs
         ->Confirmar com a Patricia um nome provisório para as PVs das placas contadoras
 
-    ->Verificar nome das PVs e arrumar os arquivos de configuração em relação aos novos nomes das PVs
+        ->Verificar nome das PVs e arrumar os arquivos de configuração em relação aos novos nomes das PVs
 
+
+Criar a imagem docker -> usar o repositório hub.docker.com/_/python
+    -> usar imagem 3.6.5 strech (para Debian mais recente) -> OK
+        ->será necessário instalar pcaspy,requests, pip
+    -> durante instalação do pcaspy é necessário definir 2 variasveis de ambiente -> OK
+        EPICS_BASE... = . pip install pcaspy
+        2ª variaveis = linux-x86_64 pip install pcaspy
+    ->A base epics instalada deve ser a ,6 no final e n a .5 como mostrado da wikiSirius -> OK
+    #####PAREI AQUI #######
+
+    Fazer o compose file -> TEORICAMENTE FINALIZADO, VER COMO TESTAR , QUAL COMANDO RODAR??? CONFERIR SE ESTÁ TUDO CERTO
+    -> IOC deve se encontrar fora do ambiente criado do Docker, para sempre que for alterado o código não seja necessário remontar a imagem
+        e sim apenas reiniciala
+        ->Pasta externa ao container é mapeado dentro dele para que seja acessivel um arquivo de fora pelo container, logo permite que ele execute
+        o IOC presente em uma pasta externa, deixando o container mais modular
 
 adicionar PVs no archivers
+
+CORRIGIR TODOS OS LUGARES QUE ESTÁ ESCRITO ENVIROMENT PARA environment (TEM UM N ANTES DO M)
 
 DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
@@ -183,30 +201,23 @@ Adicionar mais informações no read me do github
     ->documentar a necessidade de haver um cópida do arquivo de configuração dentro da pasta dos displays da GUI (devido eles funcionarem standalone)
     ->explicação da dinamicidade das telas baseado nos 2 arquivos de confugração
     ->Explicação do passo a passo para inserir ou deletar uma nova sala ou switch nos arquivos de configuração
-
-inserir no inicio do código breve descrição de seu propósito
-    -> inserir link para documento de especificação do padrão de armazenamento de configurações do arquivo .config
-EXPLICAR EM UM DOCUMENTO O ESQUEMA DO ARQUIVO DE CONFIGURAÇÃO E SUBIR NO GIT -> inserir na descrição do código esse link
-    -> comentar também sobre os outros diagramas no cabeçalho do código
-
-documentar em alto nivel os códigos da GUI??? documentar o padrão do arquivo de configuração rooms?
-
-Criar a imagem docker -> usar o repositório hub.docker.com/_/python
-    -> usar imagem 3.6.5 strech (para Debian mais recente)
-        ->será necessário instalar pcaspy,requests, pip
-    -> IOC deve se encontrar fora do ambiente criado do Docker, para sempre que for alterado o código não seja necessário reomontar a imagem
-        e sim apenas reiniciala
-
-NOME DO ARQUIVO DE CONFIGURAÇÃO MODIFICADO EM TODOS OS LUGARES, ALTERAR ISSO EM TODOS OS CÓDIGOS INCLUSIVE NO DIAGRAMA
-    ->DE POEMONITOR.CONFIG FOI PARA SWITCHES.CONFIG
-        ->NÃO ESQUECER DE ATUALIZAR A PRÓPRIA DESCRIÇÃO NO CABEÇALHO DO CÓDIGO Q REFERENCIA ESSE NOME, INCLUSIVE TAMBÉM RENOVAR O LINK
+    ->Explicar esquema de ID das salas de racks e conectividade no arquivo rooms.config
 
 ->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
     ->Acho interessante mostrar as telas para explicar como interpretar os feedbacks visuais
         ->tirei uma foto de um caso que expressa bem isso
 
--> anotar considerações futuras par ao projeto
+-> anotar considerações futuras para o projeto
 NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
-realizar o teste de timeout para a estrutura usando autenticação nos switches
+realizar o teste de timeout para a estrutura usando autenticação nos switches (NÃO TESTADA POIS NÃO FOI A APLICADA NO MOMENTO)
 
 RENOVAR O LINK DOS DIAGRAMAS NO CABEÇALHO DO CÓDIGO, LINKS SOBRESSALENTE DEVIDO A MUDANÇA DO FORMATO DE DIRETÓRIO USADO
+
+ATUALIZAR VERSÃO DO DOCKER
+
+problemas durante a criação de telas dinamicas com pydm para reportar a Lais
+
+    -> Não consegui passar valor via relatedDisplayButton
+    -> Quando fiz um funcionamento similiar so relatedDisplayButton com apenas pushButtons(logo q o usuario clicava eu
+     criava io objeto display dinamico) os alarms paravam de funcionar
+     ->Solução foi usar shellCode button e chamar passando argc argv a tela de display
