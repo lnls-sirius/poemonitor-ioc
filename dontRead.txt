@@ -191,49 +191,58 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
     IOC só está funcionando quando é buildado e iniciado direto pelo docker compose
         ->ISSO FAZ SENTIDO POIS É NO DOCKER COMPOSE QUE SE INICIA O VOLUME
 
-    #####PAREI AQUI #######
+    subir imagem docker criada para o projeto no docker hub
 
-	adaptar código do compose file para código funcional no swarm -> cRIAR UM NOVO ARQUIVO, DEIXAR TANTO O COMPOSO QUANTO O SWARM NO REPOSITÓRIO
+    adaptar código do compose file para código funcional no swarm -> cRIAR UM NOVO ARQUIVO, DEIXAR TANTO O COMPOSE QUANTO O SWARM NO REPOSITÓRIO
 
     depois do teste voltar configurações ao normal -> config file do ioc para switches e o caminho do compose file tbm
-    volume -> "/storage/misc/repository/poemonitor-ioc/src/ioc:/usr/local/poemonitor-ioc/"
+    volume -> "/storage/misc/repository/poemonitor-ioc/src/ioc/withoutApiLogin:/usr/local/poemonitor-ioc/"
 
-subir imagem docker criada para o projeto no docker hub
+    rodar o swarm no servidor e validar seu funcionamento (IOC ok?? Alterações plug and play tbm???)
 
-rodar o swarm no servidor e validar seu funcionamento (IOC ok?? Alterações plug and play tbm???)
+    montar README da pagina dos diagramas
+        ->montar tutorial de como excluir dados ou adicionar nos arquivos de configuração
 
-fazer documento explicando como está no caderno sobre como funciona o container docker criado
-e quais são as minimas alterações necessárias de serem realizadas para aplicar qualquer update de versão do ioc
+    fazer documento explicando como está no caderno sobre como funciona o container docker criado
+    e quais são as minimas alterações necessárias de serem realizadas para aplicar qualquer update de versão do ioc
 
-adicionar PVs no archivers
+    Adicionar mais informações no read me do github
+        ->uam coisa a falar é explicar a diferença dos arquivos contidos em cada pasta
+        ->Indicar que para mais informações sobre os status da PV raw e seus significados, acessar a documentação do switch
+        ->Explicar que existem arquivos duplicados dentro das pastas exatamente paraas coisas funcionarem standlone (explicar que existe essa necessidade)
+            pois o IOC funciona sem a interface gráfica de controle
+        ->documentar a necessidade de haver um cópida do arquivo de configuração dentro da pasta dos displays da GUI (devido eles funcionarem standalone)
+        ->explicação da dinamicidade das telas baseado nos 2 arquivos de confugração
+        ->Explicação do passo a passo para inserir ou deletar uma nova sala ou switch nos arquivos de configuração
+        ->Explicar esquema de ID das salas de racks e conectividade no arquivo rooms.config
 
-DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
+    #####PAREI AQUI #######
 
-Adicionar mais informações no read me do github
-    ->uam coisa a falar é explicar a diferença dos arquivos contidos em cada pasta
-    ->Indicar que para mais informações sobre os status da PV raw e seus significados, acessar a documentação do switch
-    ->Explicar que existem arquivos duplicados dentro das pastas exatamente paraas coisas funcionarem standlone (explicar que existe essa necessidade)
-        pois o IOC funciona sem a interface gráfica de controle
-    ->documentar a necessidade de haver um cópida do arquivo de configuração dentro da pasta dos displays da GUI (devido eles funcionarem standalone)
-    ->explicação da dinamicidade das telas baseado nos 2 arquivos de confugração
-    ->Explicação do passo a passo para inserir ou deletar uma nova sala ou switch nos arquivos de configuração
-    ->Explicar esquema de ID das salas de racks e conectividade no arquivo rooms.config
+    adicionar PVs no archivers
 
-->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
-    ->Acho interessante mostrar as telas para explicar como interpretar os feedbacks visuais
-        ->tirei uma foto de um caso que expressa bem isso
+    terminar a montagem da interface gráfica do menu principal
 
--> anotar considerações futuras para o projeto
-NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
-realizar o teste de timeout para a estrutura usando autenticação nos switches (NÃO TESTADA POIS NÃO FOI A APLICADA NO MOMENTO)
+    verificar como avisar no status e trocar de cor para rosa -> contatar a Lais
 
-RENOVAR O LINK DOS DIAGRAMAS NO CABEÇALHO DO CÓDIGO, LINKS SOBRESSALENTE DEVIDO A MUDANÇA DO FORMATO DE DIRETÓRIO USADO
+    DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
-ATUALIZAR VERSÃO DO DOCKER
+    ATUALIZAR DIAGRAMAS ALTERADOS
 
-problemas durante a criação de telas dinamicas com pydm para reportar a Lais
+    fazer explicação com a GUI de como interpretar os alarmes
 
-    -> Não consegui passar valor via relatedDisplayButton
-    -> Quando fiz um funcionamento similiar so relatedDisplayButton com apenas pushButtons(logo q o usuario clicava eu
-     criava io objeto display dinamico) os alarms paravam de funcionar
-     ->Solução foi usar shellCode button e chamar passando argc argv a tela de display
+    ->Pensar em cada caso de falha e explicar como são alarmados e os signifcados, usar imagens da tela criada para demosntrar???
+        ->Acho interessante mostrar as telas para explicar como interpretar os feedbacks visuais
+            ->tirei uma foto de um caso que expressa bem isso
+
+    -> anotar considerações futuras para o projeto
+    NECESSIDADE DE SER CRIPTOGRAFADA OS DADOS DE AUTENTICAÇÃO NO SWITCH
+    realizar o teste de timeout para a estrutura usando autenticação nos switches (NÃO TESTADA POIS NÃO FOI A APLICADA NO MOMENTO)
+
+    RENOVAR O LINK DOS DIAGRAMAS NO CABEÇALHO DO CÓDIGO, LINKS SOBRESSALENTE DEVIDO A MUDANÇA DO FORMATO DE DIRETÓRIO USADO
+
+    problemas durante a criação de telas dinamicas com pydm para reportar a Lais
+
+        -> Não consegui passar valor via relatedDisplayButton
+        -> Quando fiz um funcionamento similiar so relatedDisplayButton com apenas pushButtons(logo q o usuario clicava eu
+         criava io objeto display dinamico) os alarms paravam de funcionar
+         ->Solução foi usar shellCode button e chamar passando argc argv a tela de display
