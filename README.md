@@ -46,7 +46,7 @@ For running the GUI application it's needed to have installed before the followi
 
 This application was deployed on Sirius infrastructure using [Docker](https://www.docker.com/). All docker files used on this project and it's respective documentation  are stored at https://github.com/lnls-sirius/docker-poemonitor.
 
-## Deploying an updated IOC version IOC
+## Deploying an updated IOC version 
 
 Deploy a IOC version update is pretty easy due to the way the Docker image for running this IOC on Sirius has been built. During the Docker image build a volume is created at the directory where the IOC file is, this makes possible for the image to access files from the host machine, that is, access the IOC script and run it. Considering that, the only change that is needed to update the IOC version, is stop the actual image from running, exchange the IOC script files into the directory where the image volume has been created and restart the image, this way the image will start to run the new IOC version.
 
