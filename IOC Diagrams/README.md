@@ -1,6 +1,6 @@
 # poemonitor-ioc Documentation files
 
-This directory is where most of the poemonitor-ioc project documentation is.
+Directory to store the poemonitor IOC project documentation.
 
 ## Aplication Environment.png
 
