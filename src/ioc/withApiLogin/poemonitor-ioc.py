@@ -125,11 +125,11 @@ class PoemonitorDriver(Driver):
         #Periodically inserts read requests into each request queue
         while(True):
             #DEBUG
-            print(self.connectionStatusList)
+            #print(self.connectionStatusList)
             for i in self.listOfQueues:
                 i.put({'request_type':'READ_POE_PORT_STATUS'})
                 #DEBUG
-                print(i.qsize())
+                #print(i.qsize())
             self.event.wait(SCAN_DELAY)
 
     def processThread(self,queueId):
@@ -202,7 +202,7 @@ class PoemonitorDriver(Driver):
 
                                      #DEBUG
                                      #print('updated PVs     queueID = ' + str(queueId))
-                                     print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
+                                     #print('Port: ' + r['port_id'] + '   status: ' + r['poe_detection_status'])
 
                                      #Update PVs values
                                      self.setParam(device['name']+':PwrState-Raw',r['poe_detection_status'])
