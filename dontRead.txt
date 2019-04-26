@@ -222,13 +222,13 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
         ->Acho interessante mostrar as telas para explicar como interpretar os feedbacks visuais
             ->tirei uma foto de um caso que expressa bem isso
 
+    Comentar  TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
+
     #####PAREI AQUI #######
 
     adicionar PVs no archivers
 
     terminar a montagem da interface gráfica do menu principal
-
-    DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
     ATUALIZAR DIAGRAMAS ALTERADOS
 
