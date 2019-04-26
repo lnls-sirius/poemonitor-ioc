@@ -10,10 +10,10 @@
 #used on the network infrastructure at Sirius. It also permits to enable/disable PoE interface from ports
 #through caput requests. For start/stop monitoring switches/devices it's necessary to insert/remove their
 #data into the configuration file (switches.config) following it's storage pattern described on :
-# <LINK DA ESPECIFICAÇÃO DO ARQUIVO DE CONFIGURAÇÃO>
+# https://github.com/lnls-sirius/poemonitor-ioc/blob/master/IOC%20Diagrams/Configuration%20Files.pdf
 #You can also check the IOC structure explanation diagram on the link below for a high level view of how
 #does this IOC works.
-# https://github.com/lnls-sirius/poemonitor-ioc/tree/master/IOC%20Diagrams
+# https://github.com/lnls-sirius/poemonitor-ioc/blob/master/IOC%20Diagrams/Processes%20Architecture.pdf
 
 #Tested with python 3.6.5 and pcaspy 0.7.2
 
