@@ -222,8 +222,6 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
 
     terminar a montagem da interface gráfica do menu principal
 
-    verificar como avisar no status e trocar de cor para rosa -> contatar a Lais
-
     DELETAR TODOS CÓDIGOS DE DEBUGS -> control f DEBUG
 
     ATUALIZAR DIAGRAMAS ALTERADOS
@@ -246,3 +244,4 @@ Criar a imagem docker -> usar o repositório hub.docker.com/_/python
         -> Quando fiz um funcionamento similiar so relatedDisplayButton com apenas pushButtons(logo q o usuario clicava eu
          criava io objeto display dinamico) os alarms paravam de funcionar
          ->Solução foi usar shellCode button e chamar passando argc argv a tela de display
+        ->verificar como avisar no status e trocar de cor para rosa -> contatar a Lais
