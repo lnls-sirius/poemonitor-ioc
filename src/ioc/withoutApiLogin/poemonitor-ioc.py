@@ -227,7 +227,9 @@ class PoemonitorDriver(Driver):
 
             #Request processment when disconnected
             except requests.exceptions.ConnectionError:
-                print('Connection lost with '+ loginData['ip'] + '...')
+
+                #DEBUG
+                #print('Connection lost with '+ loginData['ip'] + '...')
 
                 #Set indicative alarms for signalizing disconnected PVs depending on the request type
 
