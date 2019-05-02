@@ -50,9 +50,9 @@ This application was deployed on Sirius infrastructure using [Docker](https://ww
 
 Deploy a IOC version update is pretty easy due to the way the Docker image for running this IOC on Sirius has been built. During the Docker image build a volume is created at the directory where the IOC file is, this makes possible for the image to access files from the host machine, that is, access the IOC script and run it. Considering that, the steps to update the IOC version are:
 
-* Stop the actual service from running -> _docker stack rm <service name>_
+* Stop the actual service from running -> _docker stack rm 'service name'_
 * Exchange the IOC script files into the directory where the image volume has been created  
-* Restart the image, this way the image will start to run the new IOC version -> _docker stack deploy --compose-file <filename> <service name>_
+* Restart the image, this way the image will start to run the new IOC version -> _docker stack deploy --compose-file 'filename' 'service name'_
 
 PS:The commands showed above consider the usage of swarm for service deployment, but the process for other deploy methods are similar
 
