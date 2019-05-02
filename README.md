@@ -46,11 +46,17 @@ For running the GUI application it's needed to have installed before the followi
 
 This application was deployed on Sirius infrastructure using [Docker](https://www.docker.com/). All docker files used on this project and it's respective documentation  are stored at https://github.com/lnls-sirius/docker-poemonitor.
 
-## Deploying an updated IOC version 
+## Deploying an updated IOC version
 
-Deploy a IOC version update is pretty easy due to the way the Docker image for running this IOC on Sirius has been built. During the Docker image build a volume is created at the directory where the IOC file is, this makes possible for the image to access files from the host machine, that is, access the IOC script and run it. Considering that, the only change that is needed to update the IOC version, is stop the actual image from running, exchange the IOC script files into the directory where the image volume has been created and restart the image, this way the image will start to run the new IOC version.
+Deploy a IOC version update is pretty easy due to the way the Docker image for running this IOC on Sirius has been built. During the Docker image build a volume is created at the directory where the IOC file is, this makes possible for the image to access files from the host machine, that is, access the IOC script and run it. Considering that, the steps to update the IOC version are:
 
-It's important to notice that any change on the localization of the IOC makes necessary to update the place where the docker volume is created, that is, change the Docker configuration file used for creating the image, rebuild the image for it to start considering the new path to the IOC file when mounting it's volume, otherwise a "file not found" error might happen.
+* Stop the actual service from running -> _docker stack rm <service name>_
+* Exchange the IOC script files into the directory where the image volume has been created  
+* Restart the image, this way the image will start to run the new IOC version -> _docker stack deploy --compose-file <filename> <service name>_
+
+PS:The commands showed above consider the usage of swarm for service deployment, but the process for other deploy methods are similar
+
+It's important to notice that any change on the localization of the IOC makes necessary to update the place where the docker volume is created, that is, change the Docker configuration file used for creating the image, rebuild the image for it to start considering the new path to the IOC file when mounting it's volume, otherwise a _"file not found"_ error might happen.
 
 ## Project documentation
 
